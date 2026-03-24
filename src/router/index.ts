@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import TypeChambreList from '../views/TypeChambreList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,7 +20,23 @@ const router = createRouter({
     {
       path: '/chambres',
       name: 'types-chambres',
-      component: TypeChambreList 
+      component: () => import('../views/TypeChambreList.vue')
+    },
+    // --- NOUVELLES ROUTES : RÉSERVATION ET PANIER ---
+    {
+      path: '/reservation/step1',
+      name: 'reservationStep1',
+      component: () => import('../views/ReservationStep1.vue')
+    },
+    {
+      path: '/reservation/step2',
+      name: 'reservationStep2',
+      component: () => import('../views/ReservationStep2.vue')
+    },
+    {
+      path: '/panier',
+      name: 'panier',
+      component: () => import('../views/PanierView.vue')
     }
   ],
 })
