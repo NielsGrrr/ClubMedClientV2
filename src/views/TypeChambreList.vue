@@ -29,7 +29,7 @@ onMounted(async () => {
 
     <ul v-else>
       <li v-for="type in typesChambres" :key="type.idTypeChambre">
-        <strong>{{ type.nomType }}</strong> 
+        <strong>{{ type.nomType }}</strong>
         </li>
     </ul>
   </div>
@@ -38,4 +38,4 @@ onMounted(async () => {
 <style scoped>
 .error { color: red; }
 .container { padding: 20px; }
-</style>
+</style> 
