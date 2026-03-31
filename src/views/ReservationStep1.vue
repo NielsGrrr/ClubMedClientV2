@@ -2,11 +2,29 @@
   <div class="page-wrapper">
     
     <div class="carousel-container">
-      <div class="carousel-scroll">
-        <img src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1200&q=80" alt="Resort 1" class="carousel-img main-img" />
-        <img src="https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80" alt="Resort 2" class="carousel-img" />
-        <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80" alt="Resort 3" class="carousel-img" />
-        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" alt="Resort 4" class="carousel-img" />
+      <div class="carousel-slider" :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }">
+        <div 
+          class="carousel-slide placeholder-img" 
+          v-for="(slide, index) in carouselSlides" 
+          :key="index"
+        >
+          <!-- C'est ici que tu mettras ta vraie balise <img :src="slide.url" /> plus tard -->
+          <span>{{ slide.label }}</span>
+        </div>
+      </div>
+      
+      <!-- Contrôles du carrousel -->
+      <button class="carousel-btn prev-btn" @click="prevSlide" v-if="carouselSlides.length > 1">❮</button>
+      <button class="carousel-btn next-btn" @click="nextSlide" v-if="carouselSlides.length > 1">❯</button>
+      
+      <!-- Indicateurs (points) -->
+      <div class="carousel-indicators">
+        <span 
+          v-for="(_, index) in carouselSlides" 
+          :key="index" 
+          :class="['dot', { active: currentImageIndex === index }]"
+          @click="goToSlide(index)"
+        ></span>
       </div>
     </div>
 
@@ -52,7 +70,12 @@
         <p class="section-subtitle">Veuillez renseigner les informations pour chaque personne.</p>
 
         <div class="traveler-card" v-for="(voyageur, index) in reservationState.voyageurs" :key="index">
-          <div class="traveler-header">Participant {{ index + 1 }}</div>
+          <div class="traveler-header">
+            <span>Participant {{ index + 1 }}</span>
+            <button class="btn-remove-person" v-if="reservationState.nbPersonnes > 1" @click="removeSpecificVoyageur(index)" title="Retirer ce participant">
+              ✕ Retirer
+            </button>
+          </div>
           
           <div class="traveler-form-row">
             <div class="t-field">
@@ -92,6 +115,26 @@ import { reservationState } from '../stores/reservationState';
 
 const router = useRouter();
 const transports = ref<any[]>([]);
+
+// --- CARROUSEL ---
+const currentImageIndex = ref(0);
+const carouselSlides = ref([
+  { id: 1, label: 'Image Principale (ex: Vue du Resort)' },
+  { id: 2, label: 'Image 2 (ex: Chambre Spacieuse)' },
+  { id: 3, label: 'Image 3 (ex: Piscine Club Med)' },
+  { id: 4, label: 'Image 4 (ex: Activités Sportives)' }
+]);
+
+const nextSlide = () => {
+  currentImageIndex.value = (currentImageIndex.value + 1) % carouselSlides.value.length;
+};
+const prevSlide = () => {
+  currentImageIndex.value = (currentImageIndex.value - 1 + carouselSlides.value.length) % carouselSlides.value.length;
+};
+const goToSlide = (index: number) => {
+  currentImageIndex.value = index;
+};
+// -----------------
 
 // Limites de dates
 const today = new Date();
@@ -135,6 +178,13 @@ const removeVoyageur = () => {
   }
 };
 
+const removeSpecificVoyageur = (index: number) => {
+  if (reservationState.nbPersonnes > 1) {
+    reservationState.nbPersonnes--;
+    reservationState.voyageurs.splice(index, 1);
+  }
+};
+
 // Validation du formulaire entier
 const isFormValid = computed(() => {
   if (!reservationState.dateDebut || !reservationState.dateFin || !reservationState.transportId) return false;
@@ -156,46 +206,98 @@ const goToStep2 = () => {
 </script>
 
 <style scoped>
-/* VARIABLES */
+/* VARIABLES CLUB MED */
 :root {
-  --text-color: #000000;
-  --border-color: #DDDDDD;
-  --primary-btn: #FFC72C; /* Jaune Soleil Club Med */
-  --primary-btn-hover: #f0b91d;
-  --bg-color: #FFFFFF;
+  --text-color: #002654; /* Bleu marin Club Med */
+  --border-color: #E2E2E2;
+  --primary-btn: #0071CE; /* Bleu ciel action */
+  --primary-btn-hover: #005A9C;
+  --bg-color: #F9F9F9;
 }
 
 .page-wrapper {
   color: var(--text-color);
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
   padding-bottom: 80px;
 }
-.page-wrapper * { color: #000000; } /* Écriture forcée en noir */
+.page-wrapper * { color: #002654; } 
 
-/* CARROUSEL SCROLLABLE */
+/* BANNERS / IMAGES PLACEHOLDERS */
+.placeholder-img {
+  background-color: #EAEAEA;
+  border: 2px dashed #B0B0B0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #707070 !important;
+  font-weight: bold;
+  font-size: 14px;
+}
+.placeholder-img span { color: #707070 !important; }
+
+/* NOUVEAU CARROUSEL */
 .carousel-container {
   width: 100%;
-  padding: 20px;
+  padding: 20px 0;
   max-width: 1200px;
   margin: 0 auto;
-}
-.carousel-scroll {
-  display: flex;
-  overflow-x: auto;
-  gap: 10px;
+  position: relative;
+  overflow: hidden;
   border-radius: 16px;
-  scroll-snap-type: x mandatory;
 }
-.carousel-scroll::-webkit-scrollbar { display: none; }
-.carousel-img {
-  height: 400px;
+.carousel-slider {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  height: 500px;
+}
+.carousel-slide {
+  min-width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 12px;
-  scroll-snap-align: start;
-  flex: 0 0 auto;
+  flex-shrink: 0;
+  border-radius: 16px;
 }
-.main-img { width: 50%; }
-.carousel-img:not(.main-img) { width: 25%; }
+
+/* BOUTONS CARROUSEL */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  font-size: 24px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 50%;
+  color: #002654;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: background-color 0.3s;
+  z-index: 10;
+}
+.carousel-btn:hover { background-color: white; }
+.prev-btn { left: 20px; }
+.next-btn { right: 20px; }
+
+/* INDICATEURS CARROUSEL */
+.carousel-indicators {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  border: 1px solid rgba(0, 38, 84, 0.2);
+  transition: background-color 0.3s;
+}
+.dot.active, .dot:hover { background-color: #0071CE; border-color: white; }
 
 /* CONTENU PRINCIPAL */
 .main-content {
@@ -264,12 +366,21 @@ const goToStep2 = () => {
 
 .traveler-card {
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 8px;
+  padding: 25px;
   margin-bottom: 20px;
-  background: #FAFAFA;
+  background: #FFFFFF;
 }
-.traveler-header { font-size: 16px; font-weight: 700; margin-bottom: 15px; }
+.traveler-header { 
+  font-size: 18px; 
+  font-weight: 700; 
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #EAEAEA;
+  padding-bottom: 10px;
+}
 .traveler-form-row { display: flex; gap: 20px; }
 .t-field { flex: 1; display: flex; flex-direction: column; }
 .t-field label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
@@ -290,20 +401,21 @@ const goToStep2 = () => {
 }
 .btn-submit-large {
   background-color: var(--primary-btn);
-  color: #000000 !important;
+  color: #FFFFFF !important;
   border: none;
-  border-radius: 30px;
+  border-radius: 6px;
   padding: 16px 40px;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 10px rgba(255, 199, 44, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 113, 206, 0.3);
 }
 .btn-submit-large:hover:not(:disabled) {
   background-color: var(--primary-btn-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(255, 199, 44, 0.5);
+  box-shadow: 0 6px 15px rgba(0, 113, 206, 0.5);
 }
 .btn-submit-large:disabled {
   background-color: #E0E0E0;
@@ -312,6 +424,19 @@ const goToStep2 = () => {
   box-shadow: none;
   transform: none;
 }
+
+/* BOUTON SUPPRIMER */
+.btn-remove-person {
+  background: none;
+  border: none;
+  color: #D32F2F !important;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+.btn-remove-person:hover { background: #FFEBEE; }
 
 @media (max-width: 900px) {
   .booking-bar { flex-direction: column; border-radius: 20px; align-items: stretch; }

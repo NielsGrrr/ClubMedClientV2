@@ -63,13 +63,13 @@ const currentClientId = 1;
 const validerReservation = async () => {
   // Formatage du payload incluant le tableau C# `AutresVoyageurs` généré par le créateur
   const payload = {
-    clubId: parseInt(reservationState.clubId as string, 10),
-    transportId: parseInt(reservationState.transportId as string, 10),
+    clubId: Number(reservationState.clubId),
+    transportId: Number(reservationState.transportId),
     clientNum: currentClientId, 
     resaDateDebut: new Date(reservationState.dateDebut).toISOString(),
     resaDateFin: new Date(reservationState.dateFin).toISOString(),
-    resaNbPersonnes: parseInt(reservationState.nbPersonnes as string, 10),
-    resaPrix: parseFloat(reservationState.prixEstime as string),
+    resaNbPersonnes: Number(reservationState.nbPersonnes),
+    resaPrix: Number(reservationState.prixEstime),
     resaStatut: "EN_ATTENTE",
     
     // Le nom de la propriété doit correspondre à ton modèle C# (camelCase géré par le JSON parser)
@@ -98,18 +98,19 @@ const formatDate = (dateString: string) => {
 
 <style scoped>
 .page-wrapper {
-  color: #000000;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #002654;
+  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
   padding-bottom: 60px;
+  background-color: #F9F9F9;
 }
-.page-wrapper * { color: #000000; }
+.page-wrapper * { color: #002654; }
 
 .flex-center { display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
 .horizontal-layout { width: 100%; max-width: 1000px; }
 
-.card { border: 1px solid #DDDDDD; border-radius: 16px; padding: 40px; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+.card { border: 1px solid #E2E2E2; border-radius: 8px; padding: 40px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
 
-.page-title { font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 5px; margin-top: 0;}
+.page-title { font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 5px; margin-top: 0; text-transform: uppercase;}
 .page-subtitle { color: #555 !important; text-align: center; margin-bottom: 40px; font-size: 16px; margin-top: 0;}
 
 .recap-grid {
@@ -120,21 +121,22 @@ const formatDate = (dateString: string) => {
 }
 
 .demarcated-field {
-  border: 1px solid #DDDDDD;
+  border: 1px solid #E2E2E2;
   padding: 25px 20px;
-  border-radius: 12px;
+  border-radius: 6px;
   background-color: #FAFAFA;
 }
 
-.item-label { font-size: 13px; font-weight: 700; color: #555 !important; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
+.item-label { font-size: 13px; font-weight: 700; color: #707070 !important; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
 .item-value { line-height: 1.5; font-size: 15px;}
 .text-bold { font-weight: 700; }
 .text-large { font-size: 18px; }
 .traveler-name { display: block; margin-top: 4px; font-weight: 500;}
 
 .price-highlight-box {
-  background-color: #F3F3F3;
-  border-radius: 12px;
+  background-color: #F8F9FA;
+  border: 1px solid #E2E2E2;
+  border-radius: 6px;
   padding: 25px 40px;
   margin-bottom: 40px;
   display: flex;
@@ -142,25 +144,26 @@ const formatDate = (dateString: string) => {
   align-items: center;
 }
 .price-content { display: flex; align-items: center; gap: 20px; }
-.price-label { font-size: 16px; font-weight: 700; text-transform: uppercase; color: #555 !important;}
-.price-value { font-size: 36px; font-weight: 800; letter-spacing: 1px; }
+.price-label { font-size: 16px; font-weight: 700; text-transform: uppercase; color: #707070 !important;}
+.price-value { font-size: 36px; font-weight: 800; letter-spacing: 1px; color: #0071CE !important; }
 
 .actions-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 30px;}
 .btn {
   padding: 16px 30px;
   font-size: 16px;
   font-weight: bold;
-  border-radius: 12px;
+  text-transform: uppercase;
+  border-radius: 6px;
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
   flex: 1;
 }
 
-.btn-primary { background-color: #000; color: #fff !important; }
-.btn-primary:hover { background-color: #333; }
+.btn-primary { background-color: #0071CE; color: #fff !important; }
+.btn-primary:hover { background-color: #005A9C; }
 
-.btn-secondary { background-color: transparent; border: 1px solid #000; color: #000 !important; }
+.btn-secondary { background-color: transparent; border: 1px solid #002654; color: #002654 !important; }
 .btn-secondary:hover { background-color: #f5f5f5; }
 
 @media (max-width: 768px) {
