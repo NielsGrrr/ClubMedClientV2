@@ -19,8 +19,14 @@ import HelloWorld from './components/HelloWorld.vue'
     </div>
   </header> -->
 
+  <nav>
+    <router-link to="/">Destinations</router-link>
+    <router-link to="/annonces">Toutes les annonces</router-link>
+    <router-link to="/mes-favoris" class="nav-fav">❤️ Mes Favoris</router-link>
+  </nav>
+
   <RouterView />
-</template> 
+</template>
 
 <style scoped>
 header {

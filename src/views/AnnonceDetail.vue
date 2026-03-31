@@ -54,7 +54,7 @@ const toggleFavorite = () => {
       >
         <span class="heart">{{ isFavorite ? '❤️' : '🤍' }}</span>
         {{ isFavorite ? 'Favori' : 'Ajouter aux favoris' }}
-      </button> 
+      </button>
     </div>
 
     <div v-if="loading">Chargement des détails...</div>

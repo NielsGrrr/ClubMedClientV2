@@ -44,6 +44,11 @@ const router = createRouter({
       component: AnnonceDetail,
       props: true
     },
+    {
+      path: '/mes-favoris',
+      name: 'favoris-list',
+      component: () => import('../views/FavorisList.vue')
+    }
   ],
 })
 
