@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import TypeChambreList from '../views/TypeChambreList.vue'
 import AnnonceList from '../views/AnnoncesList.vue'
 import LocalisationList from '../views/LocalisationList.vue'
+import AnnonceDetail from '../views/AnnonceDetail.vue'
 //import AnnonceDetail from '../views/AnnonceDetail.vue'
 
 const router = createRouter({
@@ -36,7 +37,13 @@ const router = createRouter({
       path: '/',
       name: 'localisations',
       component: LocalisationList
-    }
+    },
+    {
+      path: '/annonces/detail/:id',
+      name: 'annonce-detail',
+      component: AnnonceDetail,
+      props: true
+    },
   ],
 })
 

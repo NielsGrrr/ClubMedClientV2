@@ -50,7 +50,13 @@ watch(() => route.params.id, chargerClubs);
         <div class="content">
           <h3>{{ club.titre }}</h3>
           <p>{{ club.description }}</p>
-          <button class="btn-info">Découvrir ce club</button>
+          <router-link
+            :to="{ name: 'annonce-detail', params: { id: club.idClub } }"
+            custom
+            v-slot="{ navigate }"
+          >
+            <button @click="navigate" class="btn-info">Découvrir ce club</button>
+          </router-link>
         </div>
       </div>
     </div>
