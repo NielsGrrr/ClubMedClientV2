@@ -46,8 +46,13 @@ watch(() => route.params.id, chargerClubs);
       <p v-if="clubs.length === 0">Aucun club trouvé pour cette destination.</p>
 
       <div v-for="club in clubs" :key="club.idClub" class="card">
-        <div class="photo-placeholder">Photo ID: {{ club.numPhoto }}</div>
+        <div class="photo-placeholder"><img
+          :src="`/images/ressort/${club.numPhoto}.webp`"
+          :alt="club.titre"
+          class="club-img"
+        /></div>
         <div class="content">
+
           <h3>{{ club.titre }}</h3>
           <p>{{ club.description }}</p>
           <router-link
@@ -80,4 +85,17 @@ watch(() => route.params.id, chargerClubs);
 .photo-placeholder { height: 200px; background: #eee; display: flex; align-items: center; justify-content: center; }
 .content { padding: 15px; }
 .btn-info { width: 100%; background: #002f6c; color: white; border: none; padding: 10px; cursor: pointer; }
+
+.club-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-placeholder {
+  height: 200px;
+  background: #eee;
+  overflow: hidden;
+}
 </style>

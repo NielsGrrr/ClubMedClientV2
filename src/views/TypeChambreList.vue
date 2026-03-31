@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import typeChambreService from '@/services/typeChambreService';
+import typeChambreService from '@/services/AnnonceService';
 
 const typesChambres = ref([]);
 const loading = ref(true);
@@ -38,4 +38,4 @@ onMounted(async () => {
 <style scoped>
 .error { color: red; }
 .container { padding: 20px; }
-</style> 
+</style>

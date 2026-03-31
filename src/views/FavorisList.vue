@@ -32,7 +32,12 @@ const retirerFavori = (id) => {
       <div v-for="annonce in favoris" :key="annonce.idTypeChambre" class="card">
         <div class="photo-placeholder">
           <button @click="retirerFavori(annonce.idTypeChambre)" class="btn-remove">✕</button>
-          📸 Photo ID: {{ annonce.numPhoto }}
+          <img
+            :src="`/images/ressort/${annonce.clubNav?.localisationNav?.nomLocalisation?.toLowerCase()}.webp`"
+            :alt="annonce.nomType"
+            class="img-card"
+          />
+
         </div>
 
         <div class="content">
