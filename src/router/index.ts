@@ -1,15 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import TypeChambreList from '../views/TypeChambreList.vue'
+import AnnonceList from '../views/AnnoncesList.vue'
+import LocalisationList from '../views/LocalisationList.vue'
+//import AnnonceDetail from '../views/AnnonceDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-    },
     {
       path: '/about',
       name: 'about',
@@ -19,9 +16,26 @@ const router = createRouter({
       component: () => import('../views/AboutView.vue'),
     },
     {
-      path: '/chambres',
-      name: 'types-chambres',
-      component: TypeChambreList 
+      path: '/typeChambres',
+      name: 'types-chambre',
+      component: TypeChambreList
+    },
+    {
+      path: '/annonces/:id?',
+      name: 'annonces-list',
+      component: AnnonceList,
+      props: true
+    },
+    // {
+    //   path: '/annonces/detail/:id?',
+    //   name: 'annonces-detail',
+    //   component: AnnonceDetail,
+    //   props : true
+    // },
+    {
+      path: '/',
+      name: 'localisations',
+      component: LocalisationList
     }
   ],
 })
