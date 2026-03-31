@@ -1,108 +1,233 @@
 <template>
-  <div class="page-wrapper">
-    
-    <div class="carousel-container">
-      <div class="carousel-slider" :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }">
-        <div 
-          class="carousel-slide placeholder-img" 
-          v-for="(slide, index) in carouselSlides" 
-          :key="index"
-        >
-          <!-- C'est ici que tu mettras ta vraie balise <img :src="slide.url" /> plus tard -->
-          <span>{{ slide.label }}</span>
-        </div>
+  <div>
+    <!-- STEPPER -->
+    <nav class="cm-stepper">
+      <div class="cm-step active">
+        <div class="cm-step-bubble">1</div>
+        <span class="cm-step-label">Séjour</span>
       </div>
-      
-      <!-- Contrôles du carrousel -->
-      <button class="carousel-btn prev-btn" @click="prevSlide" v-if="carouselSlides.length > 1">❮</button>
-      <button class="carousel-btn next-btn" @click="nextSlide" v-if="carouselSlides.length > 1">❯</button>
-      
-      <!-- Indicateurs (points) -->
-      <div class="carousel-indicators">
-        <span 
-          v-for="(_, index) in carouselSlides" 
-          :key="index" 
-          :class="['dot', { active: currentImageIndex === index }]"
-          @click="goToSlide(index)"
-        ></span>
+      <div class="cm-step-line"></div>
+      <div class="cm-step">
+        <div class="cm-step-bubble">2</div>
+        <span class="cm-step-label">Activités</span>
       </div>
-    </div>
+      <div class="cm-step-line"></div>
+      <div class="cm-step">
+        <div class="cm-step-bubble">3</div>
+        <span class="cm-step-label">Transport</span>
+      </div>
+      <div class="cm-step-line"></div>
+      <div class="cm-step">
+        <div class="cm-step-bubble">4</div>
+        <span class="cm-step-label">Récapitulatif</span>
+      </div>
+    </nav>
 
-    <div class="main-content">
-      <h1 class="resort-title">{{ reservationState.clubTitre }}</h1>
-      <p class="resort-location">📍 Andalousie, Espagne • Tout compris</p>
+    <div class="cm-page">
+      <div class="cm-page-header">
+        <div v-if="reservationState.editMode" class="cm-alert cm-alert-info" style="margin-bottom:16px;">
+          ✏️ Vous modifiez la réservation <strong>#{{ reservationState.editResaNum }}</strong>.
+          Les dates et le nombre de personnes ont été pré-remplis.
+          <br><span style="font-size:12px;opacity:0.8;">⚠️ Les noms, prénoms et dates de naissance ne sont pas conservés en base de données — veuillez les resaisir.</span>
+        </div>
+        <h1>{{ reservationState.clubTitre }}</h1>
+        <p>Sélectionnez votre séjour, vos dates et vos participants</p>
+      </div>
 
-      <div class="booking-bar">
-        
-        <div class="booking-field border-right">
-          <label>Arrivée</label>
-          <input type="date" v-model="reservationState.dateDebut" :min="minDate" :max="maxDate" />
-        </div>
-        
-        <div class="booking-field border-right">
-          <label>Départ</label>
-          <input type="date" v-model="reservationState.dateFin" :min="minDateForFin" :max="maxDate" />
-        </div>
-        
-        <div class="booking-field border-right">
-          <label>Transport</label>
-          <select v-model="reservationState.transportId" @change="updateTransportInfo">
-            <option value="" disabled>Sélectionner...</option>
-            <option v-for="t in transports" :key="t.transportId" :value="t.transportId">
-              {{ t.transportLieuDepart }} (+{{ t.transportPrix }}€)
-            </option>
-          </select>
-        </div>
+      <!-- ALERTE MINEUR SEUL -->
+      <div v-if="alerteMineurSeul" class="cm-alert cm-alert-danger cm-mb-4">
+        ⚠️ Un mineur ne peut pas voyager seul. Veuillez ajouter au moins un accompagnateur adulte.
+      </div>
 
-        <div class="booking-field">
-          <label>Voyageurs</label>
-          <div class="traveler-counter">
-            <button type="button" class="counter-btn" @click="removeVoyageur" :disabled="reservationState.nbPersonnes <= 1">−</button>
-            <span class="counter-val">{{ reservationState.nbPersonnes }}</span>
-            <button type="button" class="counter-btn" @click="addVoyageur" :disabled="reservationState.nbPersonnes >= 10">+</button>
+      <div class="cm-page-inner">
+        <!-- ═══ COLONNE GAUCHE ═══ -->
+        <div>
+
+          <!-- SECTION : Type de chambre -->
+          <div class="cm-section">
+            <div class="cm-section-title">Type de chambre</div>
+            <div v-if="loadingChambres" class="cm-loading">
+              <div class="cm-spinner"></div> Chargement des chambres...
+            </div>
+            <div v-else class="cm-cards-grid">
+              <div
+                v-for="tc in typesChambres"
+                :key="tc.idTypeChambre"
+                class="cm-card-select"
+                :class="{ selected: reservationState.typeChambreId === tc.idTypeChambre, disabled: tc.indisponible }"
+                @click="!tc.indisponible && selectTypeChambre(tc)"
+              >
+                <div class="cm-card-label">{{ tc.nomType }}</div>
+                <div class="cm-card-sub">{{ tc.surface }} m² · max {{ tc.capaciteMax }} pers.</div>
+                <div v-if="tc.textePresentation" class="cm-card-sub" style="margin-top:4px;font-style:italic;">{{ tc.textePresentation }}</div>
+                <div class="cm-card-price">{{ getPrixChambreDefaut(tc.nomType) }} € <span style="font-size:11px;font-weight:500;color:var(--cm-text-light)">/nuit/pers.</span></div>
+                <div v-if="tc.indisponible" class="cm-card-badge" style="background:#FEE2E2;color:#991B1B;">Indisponible</div>
+              </div>
+            </div>
+
+            <!-- COMPTEUR DE CHAMBRES (affiché seulement quand un type est sélectionné) -->
+            <div v-if="reservationState.typeChambreId" class="chambres-counter-row">
+              <div>
+                <div style="font-weight:700;font-size:14px;color:var(--cm-bleu);">
+                  Nombre de chambres <em style="font-weight:400;font-style:normal;">{{ reservationState.typeChambreNom }}</em>
+                </div>
+                <div style="font-size:12px;color:var(--cm-text-light);margin-top:2px;">
+                  Chaque chambre peut accueillir jusqu'à {{ reservationState.typeChambreCapaciteMax }} personne(s)
+                </div>
+              </div>
+              <div class="cm-counter">
+                <button class="cm-counter-btn" @click="removeChambres" :disabled="reservationState.nbChambres <= 1">−</button>
+                <span class="cm-counter-val">{{ reservationState.nbChambres }}</span>
+                <button class="cm-counter-btn" @click="addChambres" :disabled="reservationState.nbChambres >= 10">+</button>
+              </div>
+            </div>
+
+            <div v-if="!loadingChambres && !reservationState.typeChambreId" class="cm-alert cm-alert-info cm-mt-4" style="margin-bottom:0">
+              ℹ️ Veuillez sélectionner un type de chambre pour continuer.
+            </div>
           </div>
-        </div>
 
-      </div>
+          <!-- SECTION : Dates -->
+          <div class="cm-section">
+            <div class="cm-section-title">Dates de séjour</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="cm-field">
+                <label class="cm-label">Date d'arrivée</label>
+                <input
+                  type="date"
+                  class="cm-input"
+                  v-model="reservationState.dateDebut"
+                  :min="minDate"
+                  :max="maxDate"
+                  @change="onDateDebutChange"
+                />
+              </div>
+              <div class="cm-field">
+                <label class="cm-label">Date de départ</label>
+                <input
+                  type="date"
+                  class="cm-input"
+                  v-model="reservationState.dateFin"
+                  :min="minDateFin"
+                  :max="maxDate"
+                  @change="calculerPrixStore"
+                />
+              </div>
+            </div>
+            <div v-if="nbNuits > 0" class="cm-alert cm-alert-info" style="margin-top:14px;margin-bottom:0">
+              📅 Durée du séjour : <strong>{{ nbNuits }} nuit{{ nbNuits > 1 ? 's' : '' }}</strong>
+            </div>
+          </div>
 
-      <div class="travelers-section" v-if="reservationState.nbPersonnes > 0">
-        <h2 class="section-title">Détails des participants</h2>
-        <p class="section-subtitle">Veuillez renseigner les informations pour chaque personne.</p>
+          <!-- SECTION : Participants -->
+          <div class="cm-section">
+            <div class="cm-section-title">Participants</div>
 
-        <div class="traveler-card" v-for="(voyageur, index) in reservationState.voyageurs" :key="index">
-          <div class="traveler-header">
-            <span>Participant {{ index + 1 }}</span>
-            <button class="btn-remove-person" v-if="reservationState.nbPersonnes > 1" @click="removeSpecificVoyageur(index)" title="Retirer ce participant">
-              ✕ Retirer
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+              <span style="font-size:14px;color:var(--cm-text-light);">Nombre de participants</span>
+              <div class="cm-counter">
+                <button class="cm-counter-btn" @click="removeVoyageur" :disabled="reservationState.nbPersonnes <= 1">−</button>
+                <span class="cm-counter-val">{{ reservationState.nbPersonnes }}</span>
+                <button class="cm-counter-btn" @click="addVoyageur" :disabled="reservationState.nbPersonnes >= maxCapacite">+</button>
+              </div>
+            </div>
+
+            <div
+              v-for="(voyageur, index) in reservationState.voyageurs"
+              :key="index"
+              class="cm-traveler-card"
+            >
+              <div class="cm-traveler-header">
+                <div class="cm-traveler-header-left">
+                  <span>Participant {{ index + 1 }}</span>
+                  <span v-if="voyageur.dateNaissance" :class="voyageur.type === 'adulte' ? 'cm-badge-adulte' : 'cm-badge-enfant'">
+                    {{ voyageur.type === 'adulte' ? '🧑 Adulte' : `👧 Enfant ${getAge(voyageur.dateNaissance)} ans` }}
+                  </span>
+                </div>
+                <button
+                  v-if="reservationState.nbPersonnes > 1"
+                  class="cm-btn-remove"
+                  @click="removeSpecificVoyageur(index)"
+                >✕ Retirer</button>
+              </div>
+              <div class="cm-traveler-body">
+                <div class="cm-field">
+                  <label class="cm-label">Prénom</label>
+                  <input type="text" class="cm-input" v-model="voyageur.prenom" placeholder="Jean" />
+                </div>
+                <div class="cm-field">
+                  <label class="cm-label">Nom</label>
+                  <input type="text" class="cm-input" v-model="voyageur.nom" placeholder="Dupont" />
+                </div>
+                <div class="cm-field">
+                  <label class="cm-label">Date de naissance</label>
+                  <input
+                    type="date"
+                    class="cm-input"
+                    v-model="voyageur.dateNaissance"
+                    :max="today"
+                    @change="onDateNaissanceChange(voyageur)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Résumé adultes/enfants -->
+            <div v-if="hasAnyBirthdate" style="margin-top:12px;">
+              <div class="cm-alert cm-alert-info" style="margin-bottom:0">
+                👥 {{ nbAdultes }} adulte{{ nbAdultes > 1 ? 's' : '' }}
+                <span v-if="nbEnfants > 0"> · {{ nbEnfants }} enfant{{ nbEnfants > 1 ? 's' : '' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px;">
+            <button v-if="reservationState.editMode" class="cm-btn cm-btn-secondary" @click="annulerModification">
+              Annuler
+            </button>
+            <button class="cm-btn cm-btn-primary" @click="goToStep2" :disabled="!isFormValid || alerteMineurSeul">
+              {{ reservationState.editMode ? 'Continuer la modification →' : 'Continuer vers les Activités →' }}
             </button>
           </div>
-          
-          <div class="traveler-form-row">
-            <div class="t-field">
-              <label>Prénom</label>
-              <input type="text" v-model="voyageur.prenom" placeholder="Ex: Jean" required />
-            </div>
-            
-            <div class="t-field">
-              <label>Nom</label>
-              <input type="text" v-model="voyageur.nom" placeholder="Ex: Dupont" required />
-            </div>
+        </div>
 
-            <div class="t-field">
-              <label>Date de Naissance</label>
-              <input type="date" v-model="voyageur.dateNaissance" :max="minDate" required />
-            </div>
+        <!-- ═══ SIDEBAR PRIX ═══ -->
+        <aside class="cm-price-sidebar">
+          <div class="cm-price-sidebar-title">Récapitulatif</div>
+
+          <div v-if="!reservationState.typeChambreId" style="color:rgba(255,255,255,0.5);font-size:13px;text-align:center;padding:20px 0;">
+            Sélectionnez une chambre pour voir le prix estimé.
           </div>
-        </div>
-        
-        <div class="bottom-actions">
-          <button class="btn-submit-large" @click="goToStep2" :disabled="!isFormValid">
-            Continuer vers le récapitulatif ➔
-          </button>
-        </div>
 
+          <template v-else>
+            <div class="cm-price-line">
+              <span class="cm-price-line-label">{{ reservationState.clubTitre }}</span>
+            </div>
+            <div class="cm-price-line">
+              <span class="cm-price-line-label">Chambre</span>
+              <span class="cm-price-line-value">{{ reservationState.typeChambreNom }}</span>
+            </div>
+            <div class="cm-price-line">
+              <span class="cm-price-line-label">× {{ reservationState.nbChambres }} chambre{{ reservationState.nbChambres > 1 ? 's' : '' }}</span>
+            </div>
+            <div class="cm-price-line">
+              <span class="cm-price-line-label">{{ nbNuits }} nuit{{ nbNuits > 1 ? 's' : '' }} × {{ reservationState.nbPersonnes }} pers.</span>
+              <span class="cm-price-line-value">{{ prixChambreTotal }} €</span>
+            </div>
+            <hr class="cm-price-divider" />
+            <div class="cm-price-total">
+              <span class="cm-price-total-label">Total HT</span>
+              <span class="cm-price-total-ht">{{ reservationState.prixHT }} €</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span class="cm-price-ttc-label">Total TTC (TVA 10%)</span>
+            </div>
+            <div class="cm-price-ttc-value">{{ reservationState.prixTTC }} €</div>
+            <p class="cm-price-tva">* Prix indicatif, activités et transport non inclus</p>
+          </template>
+        </aside>
       </div>
-
     </div>
   </div>
 </template>
@@ -110,64 +235,114 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import '@/assets/clubmed.css';
+import {
+  reservationState,
+  getPrixChambreDefaut,
+  calculerAge,
+  updateVoyageurType,
+  getNbNuits,
+  calculerPrix,
+  resetReservationState,
+  type Voyageur,
+} from '../stores/reservationState';
 import reservationService from '../services/reservationService';
-import { reservationState } from '../stores/reservationState';
 
 const router = useRouter();
-const transports = ref<any[]>([]);
+const loadingChambres = ref(true);
+const typesChambres = ref<any[]>([]);
 
-// --- CARROUSEL ---
-const currentImageIndex = ref(0);
-const carouselSlides = ref([
-  { id: 1, label: 'Image Principale (ex: Vue du Resort)' },
-  { id: 2, label: 'Image 2 (ex: Chambre Spacieuse)' },
-  { id: 3, label: 'Image 3 (ex: Piscine Club Med)' },
-  { id: 4, label: 'Image 4 (ex: Activités Sportives)' }
-]);
-
-const nextSlide = () => {
-  currentImageIndex.value = (currentImageIndex.value + 1) % carouselSlides.value.length;
-};
-const prevSlide = () => {
-  currentImageIndex.value = (currentImageIndex.value - 1 + carouselSlides.value.length) % carouselSlides.value.length;
-};
-const goToSlide = (index: number) => {
-  currentImageIndex.value = index;
-};
-// -----------------
-
-// Limites de dates
-const today = new Date();
+const today = new Date().toISOString().split('T')[0];
 const nextYear = new Date();
-nextYear.setFullYear(today.getFullYear() + 1);
-const minDate = ref(today.toISOString().split('T')[0]);
-const maxDate = ref(nextYear.toISOString().split('T')[0]);
+nextYear.setFullYear(nextYear.getFullYear() + 1);
+const minDate = today;
+const maxDate = nextYear.toISOString().split('T')[0];
 
-const minDateForFin = computed(() => {
-  return reservationState.dateDebut ? reservationState.dateDebut : minDate.value;
+const minDateFin = computed(() =>
+  reservationState.dateDebut ? reservationState.dateDebut : minDate
+);
+
+const nbNuits = computed(() => getNbNuits());
+const maxCapacite = computed(() => (reservationState.typeChambreCapaciteMax || 10) * reservationState.nbChambres);
+
+const nbAdultes = computed(() => reservationState.voyageurs.filter(v => v.type === 'adulte').length);
+const nbEnfants = computed(() => reservationState.voyageurs.filter(v => v.type === 'enfant').length);
+const hasAnyBirthdate = computed(() => reservationState.voyageurs.some(v => v.dateNaissance));
+
+const alerteMineurSeul = computed(() => {
+  const allHaveDate = reservationState.voyageurs.every(v => v.dateNaissance);
+  if (!allHaveDate) return false;
+  return nbAdultes.value === 0 && nbEnfants.value > 0;
 });
+
+const prixChambreTotal = computed(() => {
+  if (!reservationState.typeChambreId || nbNuits.value === 0) return 0;
+  return nbNuits.value * reservationState.typeChambrePrixNuit * reservationState.nbPersonnes * reservationState.nbChambres;
+});
+
+const getAge = (dateNaissance: string) => calculerAge(dateNaissance);
 
 onMounted(async () => {
   try {
-    transports.value = await reservationService.getTransports();
-  } catch (error) {
-    console.error("Erreur API :", error);
+    const all = await reservationService.getTypeChambresByClub(reservationState.clubId);
+    typesChambres.value = all.length > 0 ? all : await reservationService.getTypeChambres();
+  } catch {
+    try { typesChambres.value = await reservationService.getTypeChambres(); } catch { /* silent */ }
+  } finally {
+    loadingChambres.value = false;
   }
 });
 
-const updateTransportInfo = () => {
-  const t = transports.value.find(t => t.transportId === reservationState.transportId);
-  if (t) {
-    reservationState.transportInfo = t.transportLieuDepart;
-    reservationState.transportPrix = t.transportPrix;
+const selectTypeChambre = (tc: any) => {
+  if (tc.indisponible) return;
+  reservationState.typeChambreId = tc.idTypeChambre;
+  reservationState.typeChambreNom = tc.nomType;
+  reservationState.typeChambrePrixNuit = getPrixChambreDefaut(tc.nomType);
+  reservationState.typeChambreCapaciteMax = tc.capaciteMax;
+  calculerPrix();
+};
+
+const addChambres = () => {
+  if (reservationState.nbChambres < 10) {
+    reservationState.nbChambres++;
+    calculerPrix();
   }
 };
 
-// --- GESTION DYNAMIQUE DES VOYAGEURS ---
+const removeChambres = () => {
+  if (reservationState.nbChambres > 1) {
+    reservationState.nbChambres--;
+    // Réduire nb personnes si > capacité totale
+    const capaciteTotale = reservationState.typeChambreCapaciteMax * reservationState.nbChambres;
+    if (reservationState.nbPersonnes > capaciteTotale) {
+      const diff = reservationState.nbPersonnes - capaciteTotale;
+      reservationState.nbPersonnes -= diff;
+      reservationState.voyageurs.splice(capaciteTotale);
+    }
+    calculerPrix();
+  }
+};
+
+const onDateDebutChange = () => {
+  if (reservationState.dateFin && reservationState.dateFin <= reservationState.dateDebut) {
+    reservationState.dateFin = '';
+  }
+  calculerPrix();
+};
+
+const calculerPrixStore = () => calculerPrix();
+
+const onDateNaissanceChange = (voyageur: Voyageur) => {
+  updateVoyageurType(voyageur);
+};
+
 const addVoyageur = () => {
-  if (reservationState.nbPersonnes < 10) {
+  if (reservationState.nbPersonnes < maxCapacite.value) {
     reservationState.nbPersonnes++;
-    reservationState.voyageurs.push({ nom: '', prenom: '', dateNaissance: '' });
+    reservationState.voyageurs.push({
+      nom: '', prenom: '', dateNaissance: '', type: 'adulte', activitesSelectionnees: []
+    });
+    calculerPrix();
   }
 };
 
@@ -175,6 +350,7 @@ const removeVoyageur = () => {
   if (reservationState.nbPersonnes > 1) {
     reservationState.nbPersonnes--;
     reservationState.voyageurs.pop();
+    calculerPrix();
   }
 };
 
@@ -182,270 +358,44 @@ const removeSpecificVoyageur = (index: number) => {
   if (reservationState.nbPersonnes > 1) {
     reservationState.nbPersonnes--;
     reservationState.voyageurs.splice(index, 1);
+    calculerPrix();
   }
 };
 
-// Validation du formulaire entier
 const isFormValid = computed(() => {
-  if (!reservationState.dateDebut || !reservationState.dateFin || !reservationState.transportId) return false;
-  // Vérifie que chaque voyageur a bien toutes ses infos remplies
-  for (let v of reservationState.voyageurs) {
+  if (!reservationState.typeChambreId) return false;
+  if (!reservationState.dateDebut || !reservationState.dateFin) return false;
+  for (const v of reservationState.voyageurs) {
     if (!v.nom || !v.prenom || !v.dateNaissance) return false;
   }
   return true;
 });
 
+const annulerModification = () => {
+  resetReservationState();
+  router.push('/panier');
+};
+
 const goToStep2 = () => {
-  const d1 = new Date(reservationState.dateDebut).getTime();
-  const d2 = new Date(reservationState.dateFin).getTime();
-  const jours = Math.ceil((d2 - d1) / (1000 * 3600 * 24));
-  
-  reservationState.prixEstime = (jours > 0 ? jours : 1) * 100 * reservationState.nbPersonnes + reservationState.transportPrix;
+  calculerPrix();
   router.push('/reservation/step2');
 };
 </script>
 
 <style scoped>
-/* VARIABLES CLUB MED */
-:root {
-  --text-color: #002654; /* Bleu marin Club Med */
-  --border-color: #E2E2E2;
-  --primary-btn: #0071CE; /* Bleu ciel action */
-  --primary-btn-hover: #005A9C;
-  --bg-color: #F9F9F9;
+.cm-card-select.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-
-.page-wrapper {
-  color: var(--text-color);
-  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
-  padding-bottom: 80px;
-}
-.page-wrapper * { color: #002654; } 
-
-/* BANNERS / IMAGES PLACEHOLDERS */
-.placeholder-img {
-  background-color: #EAEAEA;
-  border: 2px dashed #B0B0B0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #707070 !important;
-  font-weight: bold;
-  font-size: 14px;
-}
-.placeholder-img span { color: #707070 !important; }
-
-/* NOUVEAU CARROUSEL */
-.carousel-container {
-  width: 100%;
-  padding: 20px 0;
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
-  overflow: hidden;
-  border-radius: 16px;
-}
-.carousel-slider {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-  height: 500px;
-}
-.carousel-slide {
-  min-width: 100%;
-  height: 100%;
-  object-fit: cover;
-  flex-shrink: 0;
-  border-radius: 16px;
-}
-
-/* BOUTONS CARROUSEL */
-.carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: rgba(255, 255, 255, 0.8);
-  border: none;
-  font-size: 24px;
-  padding: 10px 15px;
-  cursor: pointer;
-  border-radius: 50%;
-  color: #002654;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: background-color 0.3s;
-  z-index: 10;
-}
-.carousel-btn:hover { background-color: white; }
-.prev-btn { left: 20px; }
-.next-btn { right: 20px; }
-
-/* INDICATEURS CARROUSEL */
-.carousel-indicators {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-  z-index: 10;
-}
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  border: 1px solid rgba(0, 38, 84, 0.2);
-  transition: background-color 0.3s;
-}
-.dot.active, .dot:hover { background-color: #0071CE; border-color: white; }
-
-/* CONTENU PRINCIPAL */
-.main-content {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-.resort-title { font-size: 32px; font-weight: 700; margin: 20px 0 5px 0; }
-.resort-location { font-size: 16px; font-weight: 500; text-decoration: underline; margin-bottom: 30px; }
-
-/* BARRE DE RÉSERVATION */
-.booking-bar {
-  display: flex;
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: 40px;
-  padding: 10px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-  align-items: center;
-  position: sticky;
-  top: 20px;
-  z-index: 100;
-}
-.booking-field {
-  flex: 1;
-  padding: 5px 20px;
-  display: flex;
-  flex-direction: column;
-}
-.border-right { border-right: 1px solid var(--border-color); }
-
-.booking-field label { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
-.booking-field input, .booking-field select {
-  border: none;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 0;
-  outline: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-/* Compteur Voyageurs */
-.traveler-counter {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-top: 2px;
-}
-.counter-btn {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  border: 1px solid var(--border-color);
-  background: #fff;
-  font-size: 16px; font-weight: bold;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
-.counter-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.counter-val { font-size: 16px; font-weight: 600; }
-
-/* SECTION VOYAGEURS (Détails) */
-.travelers-section { margin-top: 50px; padding-top: 30px; border-top: 1px solid var(--border-color); }
-.section-title { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
-.section-subtitle { font-size: 15px; margin-bottom: 25px; }
-
-.traveler-card {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 25px;
-  margin-bottom: 20px;
-  background: #FFFFFF;
-}
-.traveler-header { 
-  font-size: 18px; 
-  font-weight: 700; 
-  margin-bottom: 20px;
+.chambres-counter-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #EAEAEA;
-  padding-bottom: 10px;
-}
-.traveler-form-row { display: flex; gap: 20px; }
-.t-field { flex: 1; display: flex; flex-direction: column; }
-.t-field label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-.t-field input {
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 15px;
-  outline: none;
-}
-.t-field input:focus { border-color: #000; }
-
-/* NOUVEAU BOUTON EN BAS */
-.bottom-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 30px;
-}
-.btn-submit-large {
-  background-color: var(--primary-btn);
-  color: #FFFFFF !important;
-  border: none;
-  border-radius: 6px;
-  padding: 16px 40px;
-  font-size: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 10px rgba(0, 113, 206, 0.3);
-}
-.btn-submit-large:hover:not(:disabled) {
-  background-color: var(--primary-btn-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 113, 206, 0.5);
-}
-.btn-submit-large:disabled {
-  background-color: #E0E0E0;
-  color: #888888 !important;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-/* BOUTON SUPPRIMER */
-.btn-remove-person {
-  background: none;
-  border: none;
-  color: #D32F2F !important;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
-.btn-remove-person:hover { background: #FFEBEE; }
-
-@media (max-width: 900px) {
-  .booking-bar { flex-direction: column; border-radius: 20px; align-items: stretch; }
-  .booking-field { padding: 15px; border-right: none; border-bottom: 1px solid var(--border-color); }
-  .booking-field:last-child { border-bottom: none; }
-  .traveler-form-row { flex-direction: column; }
-  .carousel-img.main-img { width: 80%; }
-  .carousel-img:not(.main-img) { width: 80%; }
-  .bottom-actions { justify-content: center; }
-  .btn-submit-large { width: 100%; text-align: center; }
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: var(--cm-sable);
+  border-radius: var(--cm-radius-md);
+  border: 1.5px solid var(--cm-border);
+  gap: 20px;
 }
 </style>

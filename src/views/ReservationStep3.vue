@@ -1,174 +1,204 @@
 <template>
-  <div class="page-wrapper flex-center">
-    <div class="reservation-container horizontal-layout">
+  <div>
+    <!-- STEPPER -->
+    <nav class="cm-stepper">
+      <div class="cm-step done">
+        <div class="cm-step-bubble">✓</div>
+        <span class="cm-step-label">Séjour</span>
+      </div>
+      <div class="cm-step-line done"></div>
+      <div class="cm-step done">
+        <div class="cm-step-bubble">✓</div>
+        <span class="cm-step-label">Activités</span>
+      </div>
+      <div class="cm-step-line done"></div>
+      <div class="cm-step active">
+        <div class="cm-step-bubble">3</div>
+        <span class="cm-step-label">Transport</span>
+      </div>
+      <div class="cm-step-line"></div>
+      <div class="cm-step">
+        <div class="cm-step-bubble">4</div>
+        <span class="cm-step-label">Récapitulatif</span>
+      </div>
+    </nav>
 
-      <div class="card">
-        <h1 class="page-title">Un dernier coup d'œil</h1>
-        <p class="page-subtitle">Vérifiez vos choix avant de finaliser la demande.</p>
+    <div class="cm-page">
+      <div class="cm-page-header">
+        <h1>Choisissez votre transport</h1>
+        <p>Sélectionnez un moyen de transport commun pour votre groupe · <strong>optionnel</strong></p>
+      </div>
 
-        <div class="recap-grid">
-          <div class="recap-item demarcated-field">
-            <div class="item-label">Destination</div>
-            <div class="item-value text-bold text-large">{{ reservationState.clubTitre }}</div>
-          </div>
+      <div class="cm-page-inner">
+        <!-- ═══ COLONNE GAUCHE ═══ -->
+        <div>
+          <div class="cm-section">
+            <div class="cm-section-title">Moyen de transport</div>
 
-          <div class="recap-item demarcated-field">
-            <div class="item-label">Séjour</div>
-            <div class="item-value text-bold">Du {{ formatDate(reservationState.dateDebut) }}<br>au {{ formatDate(reservationState.dateFin) }}</div>
-          </div>
+            <div v-if="loadingTransports" class="cm-loading">
+              <div class="cm-spinner"></div> Chargement des transports...
+            </div>
 
-          <div class="recap-item demarcated-field">
-            <div class="item-label">Transport</div>
-            <div class="item-value text-bold">{{ reservationState.transportInfo }}</div>
-          </div>
+            <div v-else style="display:flex;flex-direction:column;gap:12px;">
+              <!-- Option SANS transport (sélectionnable) -->
+              <div
+                class="cm-transport-card"
+                :class="{ selected: reservationState.transportId === null }"
+                @click="selectSansTransport"
+                style="border-style:dashed;opacity:0.85;"
+              >
+                <div class="cm-transport-icon">🚶</div>
+                <div class="cm-transport-info">
+                  <div class="cm-transport-name">Sans transport organisé</div>
+                  <div class="cm-transport-sub">Je m'occupe de mon propre transport</div>
+                </div>
+                <div class="cm-transport-price" style="color:var(--cm-text-muted);">0 €</div>
+              </div>
 
-          <div class="recap-item demarcated-field">
-            <div class="item-label">Participants ({{ reservationState.nbPersonnes }})</div>
-            <div class="item-value text-bold">
-              <span v-for="(v, index) in reservationState.voyageurs" :key="index" class="traveler-name">
-                • {{ v.prenom }} {{ v.nom }}
+              <!-- Options de transport depuis l'API -->
+              <div
+                v-for="transport in transports"
+                :key="transport.transportId"
+                class="cm-transport-card"
+                :class="{ selected: reservationState.transportId === transport.transportId }"
+                @click="selectTransport(transport)"
+              >
+                <div class="cm-transport-icon">{{ getTransportIcon(transport.transportLieuDepart) }}</div>
+                <div class="cm-transport-info">
+                  <div class="cm-transport-name">{{ transport.transportLieuDepart }}</div>
+                  <div class="cm-transport-sub">{{ getTransportType(transport.transportLieuDepart) }}</div>
+                </div>
+                <div class="cm-transport-price">{{ transport.transportPrix }} €</div>
+              </div>
+            </div>
+
+            <!-- Info récapitulatif du choix -->
+            <div class="cm-alert cm-alert-info" style="margin-top:16px;margin-bottom:0;">
+              <span v-if="reservationState.transportId">
+                ✅ Transport sélectionné pour {{ reservationState.nbPersonnes }} personne{{ reservationState.nbPersonnes > 1 ? 's' : '' }}
+              </span>
+              <span v-else>
+                ℹ️ Aucun transport sélectionné — vous pouvez continuer sans transport.
               </span>
             </div>
           </div>
-        </div>
 
-        <div class="price-highlight-box">
-          <div class="price-content">
-            <span class="price-label">Prix Total Estimé (TTC)</span>
-            <span class="price-value">{{ reservationState.prixEstime }} €</span>
+          <!-- NAVIGATION -->
+          <div style="display:flex;justify-content:space-between;margin-top:8px;">
+            <button class="cm-btn cm-btn-secondary" @click="router.push('/reservation/step2')">
+              ← Retour
+            </button>
+            <button class="cm-btn cm-btn-primary" @click="goToStep4">
+              Voir le récapitulatif →
+            </button>
           </div>
         </div>
 
-        <div class="actions-row mt-4">
-          <button @click="router.push('/reservation/step1')" class="btn btn-secondary">
-            Modifier mes choix
-          </button>
-          <button @click="validerReservation" class="btn btn-primary">
-            Confirmer et Ajouter au Panier
-          </button>
-        </div>
+        <!-- ═══ SIDEBAR PRIX ═══ -->
+        <aside class="cm-price-sidebar">
+          <div class="cm-price-sidebar-title">Récapitulatif</div>
+
+          <div class="cm-price-line">
+            <span class="cm-price-line-label">Séjour</span>
+            <span class="cm-price-line-value">{{ prixSejour }} €</span>
+          </div>
+
+          <div class="cm-price-line">
+            <span class="cm-price-line-label">Activités</span>
+            <span class="cm-price-line-value">{{ prixActivites }} €</span>
+          </div>
+
+          <div class="cm-price-line">
+            <span class="cm-price-line-label">
+              Transport
+              <span v-if="reservationState.transportNom" style="display:block;font-size:11px;margin-top:2px;">
+                {{ reservationState.transportNom }}
+              </span>
+              <span v-else style="display:block;font-size:11px;margin-top:2px;opacity:0.6;">Non sélectionné</span>
+            </span>
+            <span class="cm-price-line-value">{{ reservationState.transportPrix }} €</span>
+          </div>
+
+          <hr class="cm-price-divider" />
+
+          <div class="cm-price-total">
+            <span class="cm-price-total-label">Total HT</span>
+            <span class="cm-price-total-ht">{{ reservationState.prixHT }} €</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span class="cm-price-ttc-label">Total TTC (TVA 10%)</span>
+          </div>
+          <div class="cm-price-ttc-value">{{ reservationState.prixTTC }} €</div>
+          <p class="cm-price-tva">Taxes incluses</p>
+        </aside>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { reservationState, resetReservationState } from '../stores/reservationState';
+import '@/assets/clubmed.css';
+import { reservationState, getNbNuits, calculerPrix } from '../stores/reservationState';
 import reservationService from '../services/reservationService';
 
 const router = useRouter();
-const currentClientId = 1; 
+const loadingTransports = ref(true);
+const transports = ref<any[]>([]);
 
-const validerReservation = async () => {
-  // Formatage du payload incluant le tableau C# `AutresVoyageurs` généré par le créateur
-  const payload = {
-    clubId: Number(reservationState.clubId),
-    transportId: Number(reservationState.transportId),
-    clientNum: currentClientId, 
-    resaDateDebut: new Date(reservationState.dateDebut).toISOString(),
-    resaDateFin: new Date(reservationState.dateFin).toISOString(),
-    resaNbPersonnes: Number(reservationState.nbPersonnes),
-    resaPrix: Number(reservationState.prixEstime),
-    resaStatut: "EN_ATTENTE",
-    
-    // Le nom de la propriété doit correspondre à ton modèle C# (camelCase géré par le JSON parser)
-    autresVoyageurs: reservationState.voyageurs.map(v => ({
-      voyNom: v.nom,
-      voyPrenom: v.prenom,
-      voyDateNaissance: new Date(v.dateNaissance).toISOString()
-    }))
-  };
+const nbNuits = computed(() => getNbNuits());
 
+const prixSejour = computed(() =>
+  nbNuits.value * reservationState.typeChambrePrixNuit * reservationState.nbPersonnes
+);
+
+const prixActivites = computed(() =>
+  reservationState.voyageurs.reduce((total, v) => total + (v.activitesSelectionnees?.length ?? 0) * 15, 0)
+);
+
+onMounted(async () => {
   try {
-    await reservationService.createReservation(payload);
-    resetReservationState();
-    router.push('/panier'); 
-  } catch (error: any) {
-    alert("Erreur technique. L'API a rejeté la demande.");
-    console.error(error);
-  }
+    transports.value = await reservationService.getTransports();
+  } catch { /* silent */ }
+  finally { loadingTransports.value = false; }
+  calculerPrix();
+});
+
+const selectTransport = (transport: any) => {
+  reservationState.transportId = transport.transportId;
+  reservationState.transportNom = transport.transportLieuDepart;
+  reservationState.transportPrix = transport.transportPrix;
+  calculerPrix();
 };
 
-const formatDate = (dateString: string) => {
-  if (!dateString) return '';
-  return new Date(dateString).toLocaleDateString('fr-FR');
+// Option : voyage sans transport organisé
+const selectSansTransport = () => {
+  reservationState.transportId = null;
+  reservationState.transportNom = '';
+  reservationState.transportPrix = 0;
+  calculerPrix();
+};
+
+const getTransportIcon = (lieu: string): string => {
+  const l = lieu.toLowerCase();
+  if (l.includes('vol') || l.includes('aéroport') || l.includes('cdg') || l.includes('aeroport')) return '✈️';
+  if (l.includes('gare') || l.includes('train')) return '🚄';
+  if (l.includes('bus') || l.includes('car')) return '🚌';
+  if (l.includes('ferry') || l.includes('bateau')) return '⛴️';
+  return '🚗';
+};
+
+const getTransportType = (lieu: string): string => {
+  const l = lieu.toLowerCase();
+  if (l.includes('vol') || l.includes('aéroport') || l.includes('cdg')) return 'Transport aérien';
+  if (l.includes('gare') || l.includes('train')) return 'Transport ferroviaire';
+  if (l.includes('bus') || l.includes('car')) return 'Transport en car';
+  return 'Transport terrestre';
+};
+
+const goToStep4 = () => {
+  calculerPrix();
+  router.push('/reservation/step4');
 };
 </script>
-
-<style scoped>
-.page-wrapper {
-  color: #002654;
-  font-family: 'Montserrat', Helvetica, Arial, sans-serif;
-  padding-bottom: 60px;
-  background-color: #F9F9F9;
-}
-.page-wrapper * { color: #002654; }
-
-.flex-center { display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
-.horizontal-layout { width: 100%; max-width: 1000px; }
-
-.card { border: 1px solid #E2E2E2; border-radius: 8px; padding: 40px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-
-.page-title { font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 5px; margin-top: 0; text-transform: uppercase;}
-.page-subtitle { color: #555 !important; text-align: center; margin-bottom: 40px; font-size: 16px; margin-top: 0;}
-
-.recap-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  margin-bottom: 35px;
-}
-
-.demarcated-field {
-  border: 1px solid #E2E2E2;
-  padding: 25px 20px;
-  border-radius: 6px;
-  background-color: #FAFAFA;
-}
-
-.item-label { font-size: 13px; font-weight: 700; color: #707070 !important; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
-.item-value { line-height: 1.5; font-size: 15px;}
-.text-bold { font-weight: 700; }
-.text-large { font-size: 18px; }
-.traveler-name { display: block; margin-top: 4px; font-weight: 500;}
-
-.price-highlight-box {
-  background-color: #F8F9FA;
-  border: 1px solid #E2E2E2;
-  border-radius: 6px;
-  padding: 25px 40px;
-  margin-bottom: 40px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-.price-content { display: flex; align-items: center; gap: 20px; }
-.price-label { font-size: 16px; font-weight: 700; text-transform: uppercase; color: #707070 !important;}
-.price-value { font-size: 36px; font-weight: 800; letter-spacing: 1px; color: #0071CE !important; }
-
-.actions-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 30px;}
-.btn {
-  padding: 16px 30px;
-  font-size: 16px;
-  font-weight: bold;
-  text-transform: uppercase;
-  border-radius: 6px;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-  flex: 1;
-}
-
-.btn-primary { background-color: #0071CE; color: #fff !important; }
-.btn-primary:hover { background-color: #005A9C; }
-
-.btn-secondary { background-color: transparent; border: 1px solid #002654; color: #002654 !important; }
-.btn-secondary:hover { background-color: #f5f5f5; }
-
-@media (max-width: 768px) {
-  .recap-grid { grid-template-columns: 1fr; }
-  .actions-row { flex-direction: column-reverse; }
-  .btn { width: 100%; }
-}
-</style>
