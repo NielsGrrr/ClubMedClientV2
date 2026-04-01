@@ -1,12 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import annoncesService from '@/services/AnnonceService';
+// Import de ta logique de favoris
+import { toggleFavori, estFavori } from '@/services/favoris';
 
 const route = useRoute();
 const club = ref(null);
 const loading = ref(true);
 const error = ref(null);
+
+// Propriété calculée pour savoir si le club actuel est en favori
+const isFav = computed(() => {
+  return club.value ? estFavori(club.value.idClub) : false;
+});
 
 onMounted(async () => {
   try {
@@ -41,7 +48,12 @@ onMounted(async () => {
     <div class="info-layout">
       <div class="main-col">
         <div class="title-section">
-          <h1>{{ club.titre }}</h1>
+          <div class="title-with-fav">
+            <h1>{{ club.titre }}</h1>
+            <button @click="toggleFavori(club)" class="btn-fav" :class="{ 'is-active': isFav }">
+              {{ isFav ? '❤️' : '🤍' }}
+            </button>
+          </div>
           <div class="rating-badge">⭐ {{ club.noteMoyenne }} <span>/ 5</span></div>
         </div>
 
@@ -99,6 +111,39 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* AJOUTS POUR LES FAVORIS */
+.title-with-fav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.btn-fav {
+  background: none;
+  border: 1px solid #ddd;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+}
+
+.btn-fav:hover {
+  transform: scale(1.1);
+  border-color: #e63946;
+}
+
+.btn-fav.is-active {
+  background-color: #fff1f2;
+  border-color: #e63946;
+}
+
+/* LE RESTE DE TON CSS RESTE INCHANGÉ */
 .detail-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -107,7 +152,6 @@ onMounted(async () => {
   color: #2d3436;
 }
 
-/* Galerie Mosaïque */
 .gallery-mosaic {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -145,7 +189,6 @@ onMounted(async () => {
   cursor: pointer;
 }
 
-/* Layout */
 .info-layout { display: grid; grid-template-columns: 1fr 380px; gap: 60px; }
 
 .title-section {
@@ -179,7 +222,6 @@ h1 { font-size: 2.8rem; color: #002f6c; margin: 0; }
   padding-bottom: 10px;
 }
 
-/* Chambres */
 .chambre-card {
   display: flex;
   justify-content: space-between;
@@ -208,7 +250,6 @@ h1 { font-size: 2.8rem; color: #002f6c; margin: 0; }
   font-weight: 600;
 }
 
-/* Avis */
 .avis-card {
   padding: 25px;
   background: #f8fafc;
@@ -221,7 +262,6 @@ h1 { font-size: 2.8rem; color: #002f6c; margin: 0; }
 
 .comment { font-style: italic; color: #2d3436; margin: 15px 0; }
 
-/* Sidebar */
 .booking-card {
   position: sticky;
   top: 30px;

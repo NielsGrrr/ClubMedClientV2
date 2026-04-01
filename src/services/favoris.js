@@ -10,7 +10,7 @@ watch(favoris, (newVal) => {
 }, { deep: true });
 
 export const toggleFavori = (annonce) => {
-  const index = favoris.value.findIndex(f => f.idTypeChambre === annonce.idTypeChambre);
+  const index = favoris.value.findIndex(f => f.id === annonce.id);
   if (index > -1) {
     favoris.value.splice(index, 1);
   } else {
@@ -19,5 +19,5 @@ export const toggleFavori = (annonce) => {
 };
 
 export const estFavori = (id) => {
-  return favoris.value.some(f => f.idTypeChambre === id);
+  return favoris.value.some(f => f.id === id);
 };
