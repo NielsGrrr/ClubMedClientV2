@@ -43,16 +43,16 @@ export default {
   },
 
   async getReservationById(id: number) {
-    const response = await api.get(`/Reservations/GetById/${id}`);
+    const response = await api.get(`/Reservations/${id}`);
     return response.data;
   },
 
   async getReservationFull(resaNum: number) {
-    const response = await api.get(`/Reservations/GetById/${resaNum}`);
+    const response = await api.get(`/Reservations/${resaNum}`);
     return response.data;
   },
 
-  // SEED FRONT : Gestion des Clients (Correction des routes GetById)
+  // SEED FRONT : Gestion des Clients
   async getClient(id: number) {
     try { const response = await api.get(`/Clients/GetById/${id}`); return response.data; }
     catch { return null; }
@@ -62,7 +62,7 @@ export default {
     return response.data;
   },
 
-  // SEED FRONT : Gestion des Transports (Correction des routes GetById)
+  // SEED FRONT : Gestion des Transports
   async getTransport(id: number) {
     try { const response = await api.get(`/Transports/GetById/${id}`); return response.data; }
     catch { return null; }
