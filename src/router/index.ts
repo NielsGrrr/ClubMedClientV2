@@ -44,7 +44,6 @@ const router = createRouter({
       component: () => import('../views/admin/ResortEditView.vue'),
       meta: { requiresAuth: true },
       props: true
-      component: () => import('../views/TypeChambreList.vue'), // Chargement dynamique pour l'ancien chemin
     },
     {
       path: '/reservation/step1',
