@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import typeChambreService from '@/services/typeChambreService';
+import typeChambreService from '@/services/AnnonceService';
 
 const typesChambres = ref([]);
 const loading = ref(true);
@@ -29,7 +29,7 @@ onMounted(async () => {
 
     <ul v-else>
       <li v-for="type in typesChambres" :key="type.idTypeChambre">
-        <strong>{{ type.nomType }}</strong> 
+        <strong>{{ type.nomType }}</strong>
         </li>
     </ul>
   </div>

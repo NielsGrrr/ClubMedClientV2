@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+// Vous pourrez importer vos nouveaux composants ici plus tard (CardClub, CardLocalisation, etc.)
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <h1>Bienvenue sur ClubMed</h1>
+    <p>Cette page est en cours de construction.</p>
   </main>
 </template>
