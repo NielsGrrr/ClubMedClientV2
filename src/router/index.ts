@@ -2,6 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import TypeChambreList from '../views/TypeChambreList.vue'
 import AnnonceList from '../views/AnnoncesList.vue'
 import LocalisationList from '../views/LocalisationList.vue'
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import ProfileView from '../views/ProfileView.vue'
+import { useAuthStore } from '../stores/auth'
 import AnnonceDetail from '../views/AnnonceDetail.vue'
 
 const router = createRouter({
@@ -56,7 +60,7 @@ const router = createRouter({
       path: '/annonces/:id?',
       name: 'annonces-list',
       component: AnnonceList,
-      props : true
+      props: true
     },
     {
       path: '/localisations', // J'ai remplacé '/' par '/localisations' pour ne pas écraser 'home'
@@ -64,6 +68,20 @@ const router = createRouter({
       component: LocalisationList
     },
     {
+      path: '/login',
+      name: 'login',
+      component: LoginView
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+      meta: { requiresAuth: true }
       path: '/annonces/detail/:id',
       name: 'annonce-detail',
       component: AnnonceDetail,
@@ -77,6 +95,15 @@ const router = createRouter({
   ],
   scrollBehavior() {
     return { top: 0 };
+  }
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/login')
+  } else {
+    next()
   }
 })
 
