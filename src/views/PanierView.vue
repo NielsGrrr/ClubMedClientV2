@@ -253,6 +253,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import '@/assets/clubmed.css';
 import panierService from '../services/panierService';
+import reservationService from '../services/reservationService';
 import { reservationState, resetReservationState } from '../stores/reservationState';
 
 const router = useRouter();
@@ -294,6 +295,9 @@ onMounted(async () => {
         await panierService.validateSelected(resaNums);
         localStorage.removeItem('stripe_resa_nums');
         
+        // Rafraîchir les données immédiatement pour voir les changements
+        await Promise.all([fetchCart(), fetchReservations()]);
+        
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
         
@@ -309,7 +313,7 @@ onMounted(async () => {
   }
   // -----------------------------
 
-  await Promise.all([fetchCart(), fetchClubs()]);
+  await Promise.all([fetchCart(), fetchReservations(), fetchClubs()]);
 });
 
 const fetchCart = async () => {
@@ -387,40 +391,57 @@ const supprimer = async (resaNum: number) => {
   }
 };
 
-const modifierReservation = (item: any) => {
-  resetReservationState();
-  reservationState.editMode = true;
-  reservationState.editResaNum = item.resaNum;
-  reservationState.clubId = item.clubId;
-  reservationState.clubTitre = getClubNom(item.clubId);
+const modifierReservation = async (item: any) => {
+  loading.value = true;
+  try {
+    // 1. Récupérer la réservation COMPLÈTE (avec tous les participants et activités)
+    const fullResa = await reservationService.getReservationFull(item.resaNum);
+    
+    resetReservationState();
+    reservationState.editMode = true;
+    reservationState.editResaNum = item.resaNum;
+    reservationState.clubId = fullResa.clubId;
+    reservationState.clubTitre = getClubNom(fullResa.clubId);
 
-  // Pré-remplir les dates (stockées en BDD)
-  if (item.resaDateDebut) {
-    reservationState.dateDebut = (new Date(item.resaDateDebut).toISOString().split('T')[0]) ?? '';
+    if (fullResa.resaDateDebut) reservationState.dateDebut = fullResa.resaDateDebut.split('T')[0];
+    if (fullResa.resaDateFin) reservationState.dateFin = fullResa.resaDateFin.split('T')[0];
+
+    reservationState.nbPersonnes = fullResa.resaNbPersonnes || 1;
+    reservationState.nbChambres = Math.ceil(reservationState.nbPersonnes / 2) || 1;
+
+    // 2. Reconstruire la liste des VOYAGEURS avec leurs détails spécifiques
+    if (fullResa.sousReservations && fullResa.sousReservations.length > 0) {
+      reservationState.voyageurs = fullResa.sousReservations.map((sr: any) => ({
+        nom: sr.sousReservationNom || '',
+        prenom: sr.sousReservationPrenom || '',
+        dateNaissance: sr.sousReservationDateNaissance ? sr.sousReservationDateNaissance.split('T')[0] : '',
+        type: sr.sousReservationType || 'adulte',
+        transportId: sr.transportId,
+        transportNom: '', // Sera rempli par les composants au chargement
+        transportPrix: 0,
+        activitesSelectionnees: sr.sousReservationActivites?.map((sra: any) => sra.activiteId) || []
+      }));
+    } else {
+      // Fallback si pas de sous-réservations trouvées
+      reservationState.voyageurs = Array.from({ length: reservationState.nbPersonnes }, () => ({
+        nom: '', 
+        prenom: '', 
+        dateNaissance: '', 
+        type: 'adulte' as const, 
+        activitesSelectionnees: [],
+        transportId: null,
+        transportNom: '',
+        transportPrix: 0
+      }));
+    }
+
+    router.push('/reservation/step1');
+  } catch (err) {
+    console.error("Erreur lors du rechargement de la réservation", err);
+    alert("Impossible de charger les détails de la réservation.");
+  } finally {
+    loading.value = false;
   }
-  if (item.resaDateFin) {
-    reservationState.dateFin = (new Date(item.resaDateFin).toISOString().split('T')[0]) ?? '';
-  }
-
-  // Pré-remplir le nombre de personnes (stocké en BDD)
-  // ⚠️ Les noms/prénoms/dates de naissance NE SONT PAS en BDD → laissés vides à resaisir
-  reservationState.nbPersonnes = item.resaNbPersonnes || 1;
-  // Estimation des chambres (2 personnes par chambre par défaut)
-  reservationState.nbChambres = Math.ceil(reservationState.nbPersonnes / 2) || 1;
-
-  // Pré-remplir le transport
-  reservationState.transportId = item.transportId || null;
-  reservationState.transportNom = item.resaLieuDepart || '';
-
-  reservationState.voyageurs = Array.from({ length: reservationState.nbPersonnes }, () => ({
-    nom: '',
-    prenom: '',
-    dateNaissance: '',
-    type: 'adulte' as const,
-    activitesSelectionnees: [],
-  }));
-
-  router.push('/reservation/step1');
 };
 
 // ─── STRIPE ────────────────────────────────────────

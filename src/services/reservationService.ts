@@ -41,4 +41,21 @@ export default {
     const response = await api.put(`/Reservations/${resaNum}`, reservationData);
     return response.data;
   },
+
+  async getReservationFull(resaNum: number) {
+    const response = await api.get(`/Reservations/${resaNum}`);
+    return response.data;
+  },
+
+  // NOUVEAU : Création de sous-réservation
+  async createSousReservation(data: any) {
+    const response = await api.post('/SousReservations', data);
+    return response.data;
+  },
+
+  // NOUVEAU : Création de lien activité pour sous-réservation
+  async createSousReservationActivite(data: any) {
+    const response = await api.post('/SousReservationActivites', data);
+    return response.data;
+  }
 };

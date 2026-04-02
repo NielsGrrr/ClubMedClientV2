@@ -57,6 +57,11 @@
               </span>
             </div>
 
+            <!-- Blocage enfant < 8 ans -->
+            <div v-if="activeVoyageurEstTropJeune" class="cm-alert cm-alert-danger" style="margin-bottom:12px;">
+              ⛔ {{ activeVoyageur.prenom || `Participant ${activeVoyageurIndex + 1}` }} a moins de 8 ans et ne peut pas participer aux activités adultes.
+            </div>
+
             <div v-if="loadingActivites" class="cm-loading">
               <div class="cm-spinner"></div> Chargement des activités...
             </div>
@@ -68,13 +73,16 @@
             <div v-else style="display:flex;flex-direction:column;gap:12px;">
               <div
                 v-for="activite in activites"
-                :key="activite.actiAdulteNumType"
+                :key="activite.actiAdulteId"
                 class="cm-activity-card"
-                :class="{ checked: isActiviteSelected(activeVoyageurIndex, activite.actiAdulteNumType) }"
-                @click="toggleActivite(activeVoyageurIndex, activite.actiAdulteNumType)"
+                :class="{
+                  checked: isActiviteSelected(activeVoyageurIndex, activite.actiAdulteId),
+                  'cm-activity-disabled': activeVoyageurEstTropJeune
+                }"
+                @click="!activeVoyageurEstTropJeune && toggleActivite(activeVoyageurIndex, activite.actiAdulteId)"
               >
                 <div class="cm-activity-checkbox">
-                  <span v-if="isActiviteSelected(activeVoyageurIndex, activite.actiAdulteNumType)">✓</span>
+                  <span v-if="isActiviteSelected(activeVoyageurIndex, activite.actiAdulteId)">✓</span>
                 </div>
                 <div style="flex:1;">
                   <div style="font-weight:700;color:var(--cm-bleu);font-size:14px;margin-bottom:4px;">
@@ -89,6 +97,9 @@
                     </span>
                     <span class="cm-card-badge" style="background:var(--cm-vert);color:white;">
                       {{ activite.actiAdulteDuree }} h
+                    </span>
+                    <span v-if="activite.actiAdulteAgeMin > 0" class="cm-card-badge" style="background:#f59e0b;color:white;">
+                      {{ activite.actiAdulteAgeMin }}+ ans
                     </span>
                   </div>
                 </div>
@@ -175,6 +186,7 @@ import {
   reservationState,
   getNbNuits,
   calculerPrix,
+  calculerAge,
   type Voyageur,
 } from '../stores/reservationState';
 import reservationService from '../services/reservationService';
@@ -187,13 +199,20 @@ const activeVoyageurIndex = ref(0);
 const activeVoyageur = computed(() => reservationState.voyageurs[activeVoyageurIndex.value]);
 const nbNuits = computed(() => getNbNuits());
 
+// Vérifie si le voyageur actif a moins de 8 ans (bloqué des activités adultes)
+const activeVoyageurEstTropJeune = computed(() => {
+  const v = activeVoyageur.value;
+  if (!v || !v.dateNaissance) return false;
+  return calculerAge(v.dateNaissance) < 8;
+});
+
 const prixSejour = computed(() => {
   return nbNuits.value * reservationState.typeChambrePrixNuit * reservationState.nbPersonnes;
 });
 
 const getPrixActivitesVoyageur = (voyageur: Voyageur) => {
   return voyageur.activitesSelectionnees.reduce((total, id) => {
-    const act = activites.value.find(a => a.actiAdulteNumType === id);
+    const act = activites.value.find(a => a.actiAdulteId === id);
     return total + (act ? act.actiAdultePrixMin : 0);
   }, 0);
 };
@@ -207,6 +226,7 @@ const prixActivitesTotal = computed(() => {
 onMounted(async () => {
   try {
     activites.value = await reservationService.getActivitesAdultes();
+    reservationState.prixActivites = prixActivitesTotal.value;
   } catch {
     /* silent */
   } finally {
@@ -228,10 +248,12 @@ const toggleActivite = (voyageurIndex: number, activiteId: number) => {
   } else {
     voyageur.activitesSelectionnees.splice(idx, 1);
   }
+  reservationState.prixActivites = prixActivitesTotal.value;
   calculerPrix();
 };
 
 const goToStep3 = () => {
+  reservationState.prixActivites = prixActivitesTotal.value;
   calculerPrix();
   router.push('/reservation/step3');
 };

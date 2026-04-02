@@ -6,6 +6,10 @@ export interface Voyageur {
   dateNaissance: string;
   type: 'adulte' | 'enfant';
   activitesSelectionnees: number[];
+  // AJOUT : Transport individuel
+  transportId: number | null;
+  transportNom: string;
+  transportPrix: number;
 }
 
 export const reservationState = reactive({
@@ -20,7 +24,7 @@ export const reservationState = reactive({
   // Type de chambre
   typeChambreId: null as number | null,
   typeChambreNom: '',
-  typeChambrePrixNuit: 150, // prix par défaut (voir probleme.md)
+  typeChambrePrixNuit: 150, // prix par défaut
   typeChambreCapaciteMax: 10,
   nbChambres: 1, // nombre de chambres du même type
 
@@ -31,27 +35,20 @@ export const reservationState = reactive({
   // Voyageurs
   nbPersonnes: 1,
   voyageurs: [
-    { nom: '', prenom: '', dateNaissance: '', type: 'adulte', activitesSelectionnees: [] }
+    { nom: '', prenom: '', dateNaissance: '', type: 'adulte', activitesSelectionnees: [], transportId: null, transportNom: '', transportPrix: 0 }
   ] as Voyageur[],
 
-  // Transport commun (Option B)
+  // Transport global (servira de valeur par défaut)
   transportId: null as number | null,
   transportNom: '',
   transportPrix: 0,
 
   // Prix calculés
+  prixActivites: 0,
   prixHT: 0,
   prixTTC: 0,
   tva: 0.10,
 });
-
-export const getPrixChambreDefaut = (nomType: string): number => {
-  const nom = nomType.toLowerCase();
-  if (nom.includes('suite')) return 280;
-  if (nom.includes('deluxe') || nom.includes('déluxe')) return 200;
-  if (nom.includes('supérieure') || nom.includes('superieure')) return 150;
-  return 180;
-};
 
 export const calculerAge = (dateNaissance: string): number => {
   if (!dateNaissance) return 999;
@@ -83,19 +80,17 @@ export const calculerPrix = () => {
   const nb = reservationState.nbPersonnes;
   const nbChambres = reservationState.nbChambres;
 
-  // Prix séjour : prix nuit × nb personnes × nb nuits × nb chambres
+  // 1. Prix séjour : prix nuit × nb personnes × nb nuits × nb chambres
   let ht = nuits * prixChambre * nb * nbChambres;
 
-  // Prix activités
-  for (const v of reservationState.voyageurs) {
-    ht += (v.activitesSelectionnees?.length ?? 0) * 15;
-  }
+  // 2. Prix activités (somme des prix d'activités déjà calculés/stockés si besoin)
+  ht += reservationState.prixActivites;
 
-  // Prix transport
-  ht += reservationState.transportPrix;
+  // 3. Prix transport INDIVIDUEL (somme de chaque voyageur)
+  const totalTransport = reservationState.voyageurs.reduce((sum, v) => sum + (v.transportPrix || 0), 0);
+  ht += totalTransport;
 
   reservationState.prixHT = Math.round(ht * 100) / 100;
-  reservationState.tva = 0.10;
   reservationState.prixTTC = Math.round(ht * 1.10 * 100) / 100;
 };
 
@@ -112,11 +107,16 @@ export const resetReservationState = () => {
   reservationState.dateDebut = '';
   reservationState.dateFin = '';
   reservationState.nbPersonnes = 1;
-  reservationState.voyageurs = [{ nom: '', prenom: '', dateNaissance: '', type: 'adulte', activitesSelectionnees: [] }];
+  reservationState.voyageurs = [{ nom: '', prenom: '', dateNaissance: '', type: 'adulte', activitesSelectionnees: [], transportId: null, transportNom: '', transportPrix: 0 }];
   reservationState.transportId = null;
   reservationState.transportNom = '';
   reservationState.transportPrix = 0;
+  reservationState.prixActivites = 0;
   reservationState.prixHT = 0;
   reservationState.prixTTC = 0;
   reservationState.tva = 0.10;
+};
+
+export const getPrixChambreDefaut = (): number => {
+  return reservationState.typeChambrePrixNuit || 150;
 };

@@ -59,6 +59,12 @@ export default {
     return response.data;
   },
 
+  // Créer une transaction de paiement
+  async createTransaction(transactionData: any) {
+    const response = await api.post('/Transactions', transactionData);
+    return response.data;
+  },
+
   // Valider tout le panier
   async validateCart(clientId: number) {
     const cartItems = await this.getCart(clientId);
@@ -67,9 +73,25 @@ export default {
     return true;
   },
 
-  // Valider une sélection de réservations
+  // Valider une sélection de réservations et créer les transactions
   async validateSelected(resaNums: number[]) {
-    const promises = resaNums.map(num => this.updateStatut(num, 'CONFIRMEE'));
+    const promises = resaNums.map(async (num) => {
+      // 1. On récupère la résa pour avoir le prix
+      const resa = await this.getById(num);
+      
+      // 2. On passe le statut en CONFIRMEE
+      await this.updateStatut(num, 'CONFIRMEE');
+      
+      // 3. On crée la transaction associée en base de données
+      await this.createTransaction({
+        resaNum: num,
+        transactionMontant: resa.resaPrix || 0,
+        transactionDate: new Date().toISOString(),
+        transactionMoyenPaiement: 'Stripe',
+        transactionStatut: 'Réussite'
+      });
+    });
+    
     await Promise.all(promises);
     return true;
   },

@@ -606,6 +606,17 @@ html, body {
   font-size: 12px;
   font-weight: 700;
 }
+.cm-activity-card.cm-activity-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+.cm-activity-card.cm-activity-disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--cm-border);
+}
 
 /* ── TRANSPORT CARD ──────────────────────────── */
 .cm-transport-card {
