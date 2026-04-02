@@ -43,18 +43,18 @@ export default {
   },
 
   async getReservationById(id: number) {
-    const response = await api.get(`/Reservations/${id}`);
+    const response = await api.get(`/Reservations/GetById/${id}`);
     return response.data;
   },
 
   async getReservationFull(resaNum: number) {
-    const response = await api.get(`/Reservations/${resaNum}`);
+    const response = await api.get(`/Reservations/GetById/${resaNum}`);
     return response.data;
   },
 
-  // SEED FRONT : Gestion des Clients
+  // SEED FRONT : Gestion des Clients (Correction des routes GetById)
   async getClient(id: number) {
-    try { const response = await api.get(`/Clients/${id}`); return response.data; }
+    try { const response = await api.get(`/Clients/GetById/${id}`); return response.data; }
     catch { return null; }
   },
   async createClient(data: any) {
@@ -62,9 +62,9 @@ export default {
     return response.data;
   },
 
-  // SEED FRONT : Gestion des Transports
+  // SEED FRONT : Gestion des Transports (Correction des routes GetById)
   async getTransport(id: number) {
-    try { const response = await api.get(`/Transports/${id}`); return response.data; }
+    try { const response = await api.get(`/Transports/GetById/${id}`); return response.data; }
     catch { return null; }
   },
   async createTransport(data: any) {

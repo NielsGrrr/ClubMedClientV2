@@ -136,11 +136,17 @@ const valider = async () => {
     try {
         const c1 = await reservationService.getClient(1);
         if (!c1) {
-            await reservationService.createClient({ numClient: 1, nom: "Client", prenom: "Systeme", email: "system@clubmed.com", telephone: "0102030405" });
+            await reservationService.createClient({ 
+                nom: "Client", 
+                prenom: "Systeme", 
+                email: "system@clubmed.com", 
+                telephone: "0102030405",
+                motDePasseCrypter: "SystemWait123*" 
+            });
         }
         const t1 = await reservationService.getTransport(1);
         if (!t1) {
-            await reservationService.createTransport({ transportId: 1, transportLieuDepart: "Aéroport (Défaut)", transportPrix: 50 });
+            await reservationService.createTransport({ transportLieuDepart: "Aéroport (Défaut)", transportPrix: 50 });
         }
     } catch (e) {
         console.warn("Erreur auto-seeding front (non critique):", e);
