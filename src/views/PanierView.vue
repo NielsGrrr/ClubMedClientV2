@@ -411,21 +411,22 @@ const modifierReservation = async (item: any) => {
 
     // 2. Reconstruire la liste des VOYAGEURS avec leurs détails spécifiques
     // Support de la casse PascalCase (Backend .NET) et camelCase (Vite/Vue)
-    const rawSousResas = fullResa.sousReservations || fullResa.SousReservations || [];
+    // Ajout d'autres variantes potentielles (participants, etc.) pour garantir le rendu correct
+    const rawSousResas = fullResa.sousReservations || fullResa.SousReservations || fullResa.participants || fullResa.Participants || [];
     
     if (rawSousResas.length > 0) {
       reservationState.voyageurs = rawSousResas.map((sr: any) => {
         console.log("Mapping participant (Azure):", sr);
         
         return {
-          nom: sr.sousReservationNom || sr.SousReservationNom || '',
-          prenom: sr.sousReservationPrenom || sr.SousReservationPrenom || '',
-          dateNaissance: (sr.sousReservationDateNaissance || sr.SousReservationDateNaissance)?.split('T')[0] || '',
-          type: (sr.sousReservationType || sr.SousReservationType || 'adulte').toLowerCase(),
-          transportId: sr.transportId || sr.TransportId,
-          transportNom: '', 
-          transportPrix: 0,
-          activitesSelectionnees: (sr.sousReservationActivites || sr.SousReservationActivites)?.map((sra: any) => sra.activiteId || sra.ActiviteId) || []
+          nom: sr.sousReservationNom || sr.SousReservationNom || sr.nom || sr.Nom || '',
+          prenom: sr.sousReservationPrenom || sr.SousReservationPrenom || sr.prenom || sr.Prenom || '',
+          dateNaissance: (sr.sousReservationDateNaissance || sr.SousReservationDateNaissance || sr.dateNaissance || sr.DateNaissance)?.split('T')[0] || '',
+          type: (sr.sousReservationType || sr.SousReservationType || sr.type || sr.Type || 'adulte').toLowerCase(),
+          transportId: sr.transportId || sr.TransportId || null,
+          transportNom: sr.transportNom || sr.TransportNom || '', 
+          transportPrix: sr.transportPrix || sr.TransportPrix || 0,
+          activitesSelectionnees: (sr.sousReservationActivites || sr.SousReservationActivites || sr.activites || sr.Activites || [])?.map((sra: any) => sra.activiteId || sra.ActiviteId || sra.id || sra.Id) || []
         };
       });
     } else {

@@ -118,10 +118,10 @@ const totalTransport = computed(() => reservationState.voyageurs.reduce((s, v) =
 const tvaAmount = computed(() => Math.round(reservationState.prixHT * 0.1));
 
 onMounted(async () => {
-    try { activitesRef.value = await reservationService.getActivitesAdultes(); } catch {}
+    try { activitesRef.value = await reservationService.getActivites(); } catch {}
 });
 
-const getActiviteNom = (id: number) => activitesRef.value.find(a => a.actiAdulteId === id)?.actiAdulteTitre || `Activité #${id}`;
+const getActiviteNom = (id: number) => activitesRef.value.find(a => a.activiteId === id)?.titre || `Activité #${id}`;
 const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
 const valider = async () => {
@@ -198,7 +198,9 @@ const valider = async () => {
         for (const actId of v.activitesSelectionnees) {
             await reservationService.createSousReservationActivite({
                 sousReservationId: subResaId,
-                activiteId: actId
+                activiteId: actId,
+                sousReservation: null, // bypass Validation
+                activite: null         // bypass Validation
             });
         }
     }

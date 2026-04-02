@@ -1,4 +1,4 @@
-import { reactive } from 'vue';
+import { reactive, watch } from 'vue';
 
 export interface Voyageur {
   nom: string;
@@ -12,7 +12,7 @@ export interface Voyageur {
   transportPrix: number;
 }
 
-export const reservationState = reactive({
+const defaultState = {
   // Mode édition (modification depuis le panier)
   editMode: false,
   editResaNum: null as number | null,
@@ -48,7 +48,16 @@ export const reservationState = reactive({
   prixHT: 0,
   prixTTC: 0,
   tva: 0.10,
-});
+};
+
+const savedState = sessionStorage.getItem('reservationState');
+const initialState = savedState ? JSON.parse(savedState) : defaultState;
+
+export const reservationState = reactive(initialState);
+
+watch(() => reservationState, (state) => {
+  sessionStorage.setItem('reservationState', JSON.stringify(state));
+}, { deep: true });
 
 export const calculerAge = (dateNaissance: string): number => {
   if (!dateNaissance) return 999;
@@ -97,8 +106,8 @@ export const calculerPrix = () => {
 export const resetReservationState = () => {
   reservationState.editMode = false;
   reservationState.editResaNum = null;
-  reservationState.clubId = 1;
-  reservationState.clubTitre = 'Club Med Les Arcs Panorama';
+  // Ne pas réinitialiser le club par défaut ici, car on le définit juste après dans AnnonceDetail.vue
+  // ou du moins, le mettre vide
   reservationState.typeChambreId = null;
   reservationState.typeChambreNom = '';
   reservationState.typeChambrePrixNuit = 150;

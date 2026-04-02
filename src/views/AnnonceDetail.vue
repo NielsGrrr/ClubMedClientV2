@@ -1,18 +1,29 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import annoncesService from '@/services/AnnonceService';
 import CardChambre from '@/components/CardChambre.vue';
 import CardAvis from '@/components/CardAvis.vue';
 import { toggleFavori, estFavori } from '@/services/favoris';
+import { reservationState, resetReservationState } from '@/stores/reservationState';
 
 const route = useRoute();
+const router = useRouter();
 const club = ref(null);
 const loading = ref(true);
 
 const isFav = computed(() => {
   return club.value ? estFavori(club.value.idClub) : false;
 });
+
+const lancerReservation = () => {
+  if (club.value) {
+    resetReservationState();
+    reservationState.clubId = club.value.idClub;
+    reservationState.clubTitre = club.value.titre;
+    router.push('/reservation/step1');
+  }
+};
 
 onMounted(async () => {
   try {
@@ -86,7 +97,7 @@ onMounted(async () => {
           <div class="price-label">À partir de</div>
           <div class="price-value">1 250 € <span>/ pers.</span></div>
           <hr />
-          <button class="btn-reserve">Réserver mon séjour</button>
+          <button @click="lancerReservation" class="btn-reserve">Réserver mon séjour</button>
           <a v-if="club.lienPdf" :href="club.lienPdf" target="_blank" class="link-pdf">
             📄 Voir la brochure technique
           </a>

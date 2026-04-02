@@ -16,6 +16,11 @@ export default {
     return response.data.filter((tc: any) => tc.idClub === clubId);
   },
 
+  async getActivitesAdultes() {
+    const response = await api.get('/ActiviteAdultes');
+    return response.data;
+  },
+
   async getTypeActivites() {
     const response = await api.get('/TypeActivites');
     return response.data;

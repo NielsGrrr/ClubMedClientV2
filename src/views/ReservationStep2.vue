@@ -73,39 +73,28 @@
             <div v-else style="display:flex;flex-direction:column;gap:12px;">
               <div
                 v-for="activite in activites"
-                :key="activite.actiAdulteId"
+                :key="activite.activiteId"
                 class="cm-activity-card"
                 :class="{
-                  checked: isActiviteSelected(activeVoyageurIndex, activite.actiAdulteId),
+                  checked: isActiviteSelected(activeVoyageurIndex, activite.activiteId),
                   'cm-activity-disabled': activeVoyageurEstTropJeune
                 }"
-                @click="!activeVoyageurEstTropJeune && toggleActivite(activeVoyageurIndex, activite.actiAdulteId)"
+                @click="!activeVoyageurEstTropJeune && toggleActivite(activeVoyageurIndex, activite.activiteId)"
               >
                 <div class="cm-activity-checkbox">
-                  <span v-if="isActiviteSelected(activeVoyageurIndex, activite.actiAdulteId)">✓</span>
+                  <span v-if="isActiviteSelected(activeVoyageurIndex, activite.activiteId)">✓</span>
                 </div>
                 <div style="flex:1;">
                   <div style="font-weight:700;color:var(--cm-bleu);font-size:14px;margin-bottom:4px;">
-                    {{ activite.actiAdulteTitre }}
+                    {{ activite.titre }}
                   </div>
                   <div style="font-size:12px;color:var(--cm-text-light);margin-bottom:8px;">
-                    {{ activite.actiAdulteDescription }}
-                  </div>
-                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <span class="cm-card-badge">
-                      Fréquence : {{ activite.actiAdulteFrequence }}
-                    </span>
-                    <span class="cm-card-badge" style="background:var(--cm-vert);color:white;">
-                      {{ activite.actiAdulteDuree }} h
-                    </span>
-                    <span v-if="activite.actiAdulteAgeMin > 0" class="cm-card-badge" style="background:#f59e0b;color:white;">
-                      {{ activite.actiAdulteAgeMin }}+ ans
-                    </span>
+                    {{ activite.description }}
                   </div>
                 </div>
                 <!-- VRAI PRIX DE LA BASE DE DONNEES -->
                 <div style="text-align:right;flex-shrink:0;">
-                  <div class="cm-card-price">{{ activite.actiAdultePrixMin }} €</div>
+                  <div class="cm-card-price">{{ activite.prixMin }} €</div>
                   <div style="font-size:11px;color:var(--cm-text-muted);">/ pers.</div>
                 </div>
               </div>
@@ -212,8 +201,8 @@ const prixSejour = computed(() => {
 
 const getPrixActivitesVoyageur = (voyageur: Voyageur) => {
   return voyageur.activitesSelectionnees.reduce((total, id) => {
-    const act = activites.value.find(a => a.actiAdulteId === id);
-    return total + (act ? act.actiAdultePrixMin : 0);
+    const act = activites.value.find(a => a.activiteId === id);
+    return total + (act ? act.prixMin : 0);
   }, 0);
 };
 
