@@ -78,9 +78,7 @@
                 </div>
               </div>
               <div style="display:flex;gap:8px;">
-                <button class="panier-btn-modifier" @click="modifierReservation(item)" title="Modifier">
-                  ✏️ Modifier
-                </button>
+                
                 <button class="panier-item-delete" @click="supprimer(item.resaNum)" title="Retirer du panier">
                   ✕ Retirer
                 </button>
@@ -388,67 +386,6 @@ const supprimer = async (resaNum: number) => {
   }
 };
 
-const modifierReservation = async (item: any) => {
-  loading.value = true;
-  try {
-    // 1. Récupérer la réservation COMPLÈTE (avec tous les participants et activités)
-    const fullResa = await reservationService.getReservationFull(item.resaNum);
-    
-    resetReservationState();
-    reservationState.editMode = true;
-    reservationState.editResaNum = item.resaNum;
-    reservationState.clubId = fullResa.clubId;
-    reservationState.clubTitre = getClubNom(fullResa.clubId);
-
-    if (fullResa.resaDateDebut) reservationState.dateDebut = fullResa.resaDateDebut.split('T')[0];
-    if (fullResa.resaDateFin) reservationState.dateFin = fullResa.resaDateFin.split('T')[0];
-
-    reservationState.nbPersonnes = fullResa.resaNbPersonnes || 1;
-    reservationState.nbChambres = Math.ceil(reservationState.nbPersonnes / 2) || 1;
-
-    // 2. Reconstruire la liste des VOYAGEURS avec leurs détails spécifiques
-    // Support de la casse PascalCase (Backend .NET) et camelCase (Vite/Vue)
-    // Ajout d'autres variantes potentielles (participants, etc.) pour garantir le rendu correct
-    const rawSousResas = fullResa.sousReservations || fullResa.SousReservations || fullResa.participants || fullResa.Participants || [];
-    
-    if (rawSousResas.length > 0) {
-      reservationState.voyageurs = rawSousResas.map((sr: any) => {
-        console.log("Mapping participant (Azure):", sr);
-        
-        return {
-          nom: sr.sousReservationNom || sr.SousReservationNom || sr.nom || sr.Nom || '',
-          prenom: sr.sousReservationPrenom || sr.SousReservationPrenom || sr.prenom || sr.Prenom || '',
-          dateNaissance: (sr.sousReservationDateNaissance || sr.SousReservationDateNaissance || sr.dateNaissance || sr.DateNaissance)?.split('T')[0] || '',
-          type: (sr.sousReservationType || sr.SousReservationType || sr.type || sr.Type || 'adulte').toLowerCase(),
-          transportId: sr.transportId || sr.TransportId || null,
-          transportNom: sr.transportNom || sr.TransportNom || '', 
-          transportPrix: sr.transportPrix || sr.TransportPrix || 0,
-          activitesSelectionnees: (sr.sousReservationActivites || sr.SousReservationActivites || sr.activites || sr.Activites || [])?.map((sra: any) => sra.activiteId || sra.ActiviteId || sra.id || sra.Id) || []
-        };
-      });
-    } else {
-      // Fallback si pas de sous-réservations trouvées
-      reservationState.voyageurs = Array.from({ length: reservationState.nbPersonnes }, () => ({
-        nom: '', 
-        prenom: '', 
-        dateNaissance: '', 
-        type: 'adulte' as const, 
-        activitesSelectionnees: [],
-        transportId: null,
-        transportNom: '',
-        transportPrix: 0
-      }));
-    }
-
-    router.push('/reservation/step1');
-  } catch (err) {
-    console.error("Erreur lors du rechargement de la réservation", err);
-    alert("Impossible de charger les détails de la réservation.");
-  } finally {
-    loading.value = false;
-  }
-};
-
 // ─── STRIPE ────────────────────────────────────────
 const ouvrirStripe = async () => {
   if (selectedItems.value.length === 0) return;
@@ -597,17 +534,6 @@ const formatDate = (dateString: string) => {
 .panier-item-ref { font-weight: 700; font-size: 14px; color: white; }
 .panier-item-club { color: rgba(255,255,255,0.65); font-size: 13px; margin-top: 2px; }
 
-.panier-btn-modifier {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: rgba(255,255,255,0.85);
-  font-size: 12px;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: var(--cm-transition);
-}
-.panier-btn-modifier:hover { background: rgba(255,255,255,0.25); color: white; }
 
 .panier-item-delete {
   background: none;
@@ -710,6 +636,9 @@ const formatDate = (dateString: string) => {
 .success-modal h2 { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--cm-bleu); margin-bottom: 12px; }
 .success-modal p { color: var(--cm-text-light); font-size: 15px; }
 </style>
+
+
+
 
 
 

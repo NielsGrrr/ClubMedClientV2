@@ -18,8 +18,8 @@ const defaultState = {
   editResaNum: null as number | null,
 
   // Club / Resort
-  clubId: 1,
-  clubTitre: 'Club Med Les Arcs Panorama',
+  clubId: null as number | null,
+  clubTitre: '',
 
   // Type de chambre
   typeChambreId: null as number | null,
@@ -101,8 +101,9 @@ export const calculerPrix = () => {
 export const resetReservationState = () => {
   reservationState.editMode = false;
   reservationState.editResaNum = null;
-  // Ne pas réinitialiser le club par défaut ici, car on le définit juste après dans AnnonceDetail.vue
-  // ou du moins, le mettre vide
+  // On réinitialise pour ne pas garder de club fantôme en mémoire
+  reservationState.clubId = null;
+  reservationState.clubTitre = '';
   reservationState.typeChambreId = null;
   reservationState.typeChambreNom = '';
   reservationState.typeChambrePrixNuit = 150;
@@ -118,6 +119,12 @@ export const resetReservationState = () => {
   reservationState.tva = 0.10;
 };
 
-export const getPrixChambreDefaut = (nomType?: string): number => {
+export const getPrixChambreDefaut = (tc?: any): number => {
+  if (tc && typeof tc === 'object' && tc.prix != null) {
+    return tc.prix;
+  }
+  if (tc && typeof tc === 'object' && tc.prixNuit != null) {
+    return tc.prixNuit;
+  }
   return reservationState.typeChambrePrixNuit || 150;
 };
