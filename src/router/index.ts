@@ -6,21 +6,54 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import { useAuthStore } from '../stores/auth'
+import AnnonceDetail from '../views/AnnonceDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/',
+      name: 'home',
+      component: () => import('../views/HomeView.vue'),
+    },
+    {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
     {
-      path: '/typeChambres',
-      name: 'types-chambre',
+      path: '/chambres',
+      name: 'types-chambres',
+      component: () => import('../views/TypeChambreList.vue'), // Chargement dynamique pour l'ancien chemin
+    },
+    {
+      path: '/reservation/step1',
+      name: 'reservationStep1',
+      component: () => import('../views/ReservationStep1.vue'),
+    },
+    {
+      path: '/reservation/step2',
+      name: 'reservationStep2',
+      component: () => import('../views/ReservationStep2.vue'),
+    },
+    {
+      path: '/reservation/step3',
+      name: 'reservationStep3',
+      component: () => import('../views/ReservationStep3.vue'),
+    },
+    {
+      path: '/reservation/step4',
+      name: 'reservationStep4',
+      component: () => import('../views/ReservationStep4.vue'),
+    },
+    {
+      path: '/panier',
+      name: 'panier',
+      component: () => import('../views/PanierView.vue'),
+    },
+    {
+      path: '/typeChambres', // Note: vous avez défini 2 routes pour les chambres, j'ai gardé les deux.
+      name: 'types-chambres-static',
       component: TypeChambreList
     },
     {
@@ -29,14 +62,8 @@ const router = createRouter({
       component: AnnonceList,
       props: true
     },
-    // {
-    //   path: '/annonces/detail/:id?',
-    //   name: 'annonces-detail',
-    //   component: AnnonceDetail,
-    //   props : true
-    // },
     {
-      path: '/',
+      path: '/localisations', // J'ai remplacé '/' par '/localisations' pour ne pas écraser 'home'
       name: 'localisations',
       component: LocalisationList
     },
@@ -55,8 +82,20 @@ const router = createRouter({
       name: 'profile',
       component: ProfileView,
       meta: { requiresAuth: true }
+      path: '/annonces/detail/:id',
+      name: 'annonce-detail',
+      component: AnnonceDetail,
+      props: true
+    },
+    {
+      path: '/mes-favoris',
+      name: 'favoris-list',
+      component: () => import('../views/FavorisList.vue') // Utilise l'import dynamique 
     }
   ],
+  scrollBehavior() {
+    return { top: 0 };
+  }
 })
 
 router.beforeEach((to, from, next) => {

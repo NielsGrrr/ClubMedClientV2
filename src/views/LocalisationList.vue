@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import localisationService from '@/services/LocalisationService';
+import CardLocalisation from '@/components/CardLocalisation.vue';
 
 const localisations = ref([]);
 const loading = ref(true);
@@ -10,7 +11,7 @@ onMounted(async () => {
     const response = await localisationService.getAllLocalisations();
     localisations.value = response.data;
   } catch (error) {
-    console.error("Erreur lors de la récupération des annonces", error);
+    console.error("Erreur lors du chargement", error);
   } finally {
     loading.value = false;
   }
@@ -18,42 +19,43 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="annonces-container">
-    <h1>Toutes nos destinations</h1>
+  <div class="destinations-page">
+    <header class="header">
+      <h1>Toutes nos destinations</h1>
+      <p>Trouvez le cadre idéal pour vos prochaines vacances</p>
+    </header>
 
-    <div v-if="loading">Chargement des pépites...</div>
+    <div v-if="loading" class="loader">Chargement du poulet...</div>
 
     <div v-else class="grid">
-      <div v-for="localisation in localisations" :key="localisation.numLocalisation" class="card">
-        <div class="photo-placeholder"> Photo </div>
-
-        <div class="content">
-          <h3>{{ localisation.nomLocalisation }}</h3>
-
-          <router-link :to="{ name: 'annonces-list', params: { id: localisation.numLocalisation } }" custom v-slot="{ navigate }">
-            <button @click="navigate" class="btn-info">Voir la localisation</button>
-          </router-link>
-        </div>
-      </div>
+      <CardLocalisation
+        v-for="loc in localisations"
+        :key="loc.numLocalisation"
+        :localisation="loc"
+      />
     </div>
   </div>
 </template>
 
 <style scoped>
+.destinations-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+h1 { color: #002f6c; font-size: 2.5rem; }
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 30px;
 }
-.card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.2s;
-}
-.card:hover { transform: scale(1.02); }
-.photo-placeholder { height: 200px; background: #eee; display: flex; align-items: center; justify-content: center; }
-.content { padding: 15px; }
-.btn-info { width: 100%; background: #002f6c; color: white; border: none; padding: 10px; cursor: pointer; }
+
+.loader { text-align: center; padding: 50px; color: #636e72; }
 </style>

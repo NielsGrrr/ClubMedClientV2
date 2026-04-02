@@ -20,5 +20,9 @@ export default {
 
   async getById(id) {
     return await apiClient.get(`/TypeChambres/${id}`);
+  },
+
+  async getClubsById(id) {
+    return await apiClient.get(`/Clubs/id/${id}`);
   }
 };
