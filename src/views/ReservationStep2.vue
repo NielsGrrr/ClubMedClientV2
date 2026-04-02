@@ -38,10 +38,10 @@
               v-for="(voyageur, index) in reservationState.voyageurs"
               :key="index"
               class="cm-tab"
-              :class="{ active: activeVoyageurIndex === index }"
-              @click="activeVoyageurIndex = index"
+              :class="{ active: activeVoyageurIndex === Number(index) }"
+              @click="activeVoyageurIndex = Number(index)"
             >
-              {{ voyageur.prenom || `Participant ${index + 1}` }}
+              {{ voyageur.prenom || `Participant ${Number(index) + 1}` }}
               <span :class="voyageur.type === 'adulte' ? 'cm-badge-adulte' : 'cm-badge-enfant'" style="margin-left:6px;">
                 {{ voyageur.type === 'adulte' ? '🧑' : '👧' }}
               </span>
@@ -73,28 +73,39 @@
             <div v-else style="display:flex;flex-direction:column;gap:12px;">
               <div
                 v-for="activite in activites"
-                :key="activite.activiteId"
+                :key="activite.actiAdulteId"
                 class="cm-activity-card"
                 :class="{
-                  checked: isActiviteSelected(activeVoyageurIndex, activite.activiteId),
+                  checked: isActiviteSelected(activeVoyageurIndex, activite.actiAdulteId),
                   'cm-activity-disabled': activeVoyageurEstTropJeune
                 }"
-                @click="!activeVoyageurEstTropJeune && toggleActivite(activeVoyageurIndex, activite.activiteId)"
+                @click="!activeVoyageurEstTropJeune && toggleActivite(activeVoyageurIndex, activite.actiAdulteId)"
               >
                 <div class="cm-activity-checkbox">
-                  <span v-if="isActiviteSelected(activeVoyageurIndex, activite.activiteId)">✓</span>
+                  <span v-if="isActiviteSelected(activeVoyageurIndex, activite.actiAdulteId)">✓</span>
                 </div>
                 <div style="flex:1;">
                   <div style="font-weight:700;color:var(--cm-bleu);font-size:14px;margin-bottom:4px;">
-                    {{ activite.titre }}
+                    {{ activite.actiAdulteTitre }}
                   </div>
                   <div style="font-size:12px;color:var(--cm-text-light);margin-bottom:8px;">
-                    {{ activite.description }}
+                    {{ activite.actiAdulteDescription }}
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <span class="cm-card-badge">
+                      Fréquence : {{ activite.actiAdulteFrequence }}
+                    </span>
+                    <span class="cm-card-badge" style="background:var(--cm-vert);color:white;">
+                      {{ activite.actiAdulteDuree }} h
+                    </span>
+                    <span v-if="activite.actiAdulteAgeMin > 0" class="cm-card-badge" style="background:#f59e0b;color:white;">
+                      {{ activite.actiAdulteAgeMin }}+ ans
+                    </span>
                   </div>
                 </div>
                 <!-- VRAI PRIX DE LA BASE DE DONNEES -->
                 <div style="text-align:right;flex-shrink:0;">
-                  <div class="cm-card-price">{{ activite.prixMin }} €</div>
+                  <div class="cm-card-price">{{ activite.actiAdultePrixMin }} €</div>
                   <div style="font-size:11px;color:var(--cm-text-muted);">/ pers.</div>
                 </div>
               </div>
@@ -142,7 +153,7 @@
           >
             <div class="cm-price-line" v-if="voyageur.activitesSelectionnees.length > 0">
               <span class="cm-price-line-label" style="font-size:11px;">
-                {{ voyageur.prenom || `Pers. ${index + 1}` }} ({{ voyageur.activitesSelectionnees.length }} act.)
+                  {{ voyageur.prenom || `Pers. ${Number(index) + 1}` }} ({{ voyageur.activitesSelectionnees.length }} act.)
               </span>
               <span class="cm-price-line-value" style="font-size:11px;">
                 {{ getPrixActivitesVoyageur(voyageur) }} €
@@ -201,13 +212,13 @@ const prixSejour = computed(() => {
 
 const getPrixActivitesVoyageur = (voyageur: Voyageur) => {
   return voyageur.activitesSelectionnees.reduce((total, id) => {
-    const act = activites.value.find(a => a.activiteId === id);
-    return total + (act ? act.prixMin : 0);
+    const act = activites.value.find(a => a.actiAdulteId === id);
+    return total + (act ? act.actiAdultePrixMin : 0);
   }, 0);
 };
 
 const prixActivitesTotal = computed(() => {
-  return reservationState.voyageurs.reduce((total, v) => {
+  return reservationState.voyageurs.reduce((total: number, v: Voyageur) => {
     return total + getPrixActivitesVoyageur(v);
   }, 0);
 });

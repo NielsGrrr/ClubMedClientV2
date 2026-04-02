@@ -3,7 +3,6 @@ import TypeChambreList from '../views/TypeChambreList.vue'
 import AnnonceList from '../views/AnnoncesList.vue'
 import LocalisationList from '../views/LocalisationList.vue'
 import AnnonceDetail from '../views/AnnonceDetail.vue'
-//import AnnonceDetail from '../views/AnnonceDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,7 +20,7 @@ const router = createRouter({
     {
       path: '/chambres',
       name: 'types-chambres',
-      component: () => import('../views/TypeChambreList.vue'),
+      component: () => import('../views/TypeChambreList.vue'), // Chargement dynamique pour l'ancien chemin
     },
     {
       path: '/reservation/step1',
@@ -48,12 +47,9 @@ const router = createRouter({
       name: 'panier',
       component: () => import('../views/PanierView.vue'),
     },
-  ],
-  scrollBehavior() {
-    return { top: 0 };
-  },
-      path: '/typeChambres',
-      name: 'types-chambre',
+    {
+      path: '/typeChambres', // Note: vous avez défini 2 routes pour les chambres, j'ai gardé les deux.
+      name: 'types-chambres-static',
       component: TypeChambreList
     },
     {
@@ -62,14 +58,8 @@ const router = createRouter({
       component: AnnonceList,
       props : true
     },
-    // {
-    //   path: '/annonces/detail/:id?',
-    //   name: 'annonces-detail',
-    //   component: AnnonceDetail,
-    //   props : true
-    // },
     {
-      path: '/',
+      path: '/localisations', // J'ai remplacé '/' par '/localisations' pour ne pas écraser 'home'
       name: 'localisations',
       component: LocalisationList
     },
@@ -82,9 +72,12 @@ const router = createRouter({
     {
       path: '/mes-favoris',
       name: 'favoris-list',
-      component: () => import('../views/FavorisList.vue')
+      component: () => import('../views/FavorisList.vue') // Utilise l'import dynamique 
     }
   ],
+  scrollBehavior() {
+    return { top: 0 };
+  }
 })
 
 export default router
