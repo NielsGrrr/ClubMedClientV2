@@ -28,12 +28,12 @@
             
             <div v-for="(v, index) in reservationState.voyageurs" :key="index" class="cm-recap-participant-card">
               <div class="cm-recap-participant-header">
-                <span class="cm-participant-tag">#{{ index + 1 }}</span>
+                <span class="cm-participant-tag">#{{ Number(index) + 1 }}</span>
                 <span class="cm-participant-name">{{ v.prenom }} {{ v.nom }}</span>
                 <span :class="v.type === 'adulte' ? 'cm-badge-adulte' : 'cm-badge-enfant'">
                   {{ v.type === 'adulte' ? 'Adulte' : 'Enfant' }}
                 </span>
-                <span style="margin-left:auto; font-size:11px; opacity:0.7;">Client ID: #{{ 100 + index }} (Fictif)</span>
+                <span style="margin-left:auto; font-size:11px; opacity:0.7;">Client ID: #{{ 100 + Number(index) }} (Fictif)</span>
               </div>
               
               <div class="cm-recap-participant-body">
@@ -114,7 +114,7 @@ const activitesRef = ref<any[]>([]);
 
 const nbNuits = computed(() => getNbNuits());
 const prixSejour = computed(() => nbNuits.value * reservationState.typeChambrePrixNuit * reservationState.nbPersonnes);
-const totalTransport = computed(() => reservationState.voyageurs.reduce((s, v) => s + (v.transportPrix || 0), 0));
+const totalTransport = computed(() => reservationState.voyageurs.reduce((s: number, v: any) => s + (v.transportPrix || 0), 0));
 const tvaAmount = computed(() => Math.round(reservationState.prixHT * 0.1));
 
 onMounted(async () => {
@@ -132,25 +132,10 @@ const valider = async () => {
   loading.value = true;
   erreur.value = '';
   try {
-    // 0. SEEDING FRONT : S'assurer que le client #1 et le transport #1 existent sur Azure
-    try {
-        const c1 = await reservationService.getClient(1);
-        if (!c1) {
-            await reservationService.createClient({ 
-                nom: "Client", 
-                prenom: "Systeme", 
-                email: "system@clubmed.com", 
-                telephone: "0102030405",
-                motDePasseCrypter: "SystemWait123*" 
-            });
-        }
-        const t1 = await reservationService.getTransport(1);
-        if (!t1) {
-            await reservationService.createTransport({ transportLieuDepart: "Aéroport (Défaut)", transportPrix: 50 });
-        }
-    } catch (e) {
-        console.warn("Erreur auto-seeding front (non critique):", e);
-    }
+    const transportsUniques = new Set(reservationState.voyageurs.map((v: any) => v.transportNom));
+    const lieuDepart = transportsUniques.size === 1 
+      ? reservationState.voyageurs[0]?.transportNom || 'Non renseigné' 
+      : 'Multi-destinations';
 
     // 1. Sauvegarde/Mise à jour de la réservation principale
     const resaPayload = {
@@ -161,7 +146,7 @@ const valider = async () => {
       resaDateDebut: reservationState.dateDebut ? new Date(reservationState.dateDebut).toISOString() : null,
       resaDateFin: reservationState.dateFin ? new Date(reservationState.dateFin).toISOString() : null,
       resaNbPersonnes: reservationState.nbPersonnes,
-      resaLieuDepart: 'Multi-destinations',
+      resaLieuDepart: lieuDepart,
       resaPrix: reservationState.prixTTC,
       resaStatut: 'EN_ATTENTE'
     };
@@ -196,12 +181,15 @@ const valider = async () => {
 
         // 3. Boucle pour lier les activités
         for (const actId of v.activitesSelectionnees) {
-            await reservationService.createSousReservationActivite({
-                sousReservationId: subResaId,
-                activiteId: actId,
-                sousReservation: null, // bypass Validation
-                activite: null         // bypass Validation
-            });
+            try {
+                await reservationService.createSousReservationActivite({
+                    sousReservationId: subResaId,
+                    activiteId: actId
+                });
+            } catch (errAct) {
+                console.warn(`Erreur lors de l'ajout de l'activité ${actId} à la sous-réservaton ${subResaId}`, errAct);
+                // On n'interrompt pas la réservation principale
+            }
         }
     }
 

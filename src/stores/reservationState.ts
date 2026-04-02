@@ -38,11 +38,6 @@ const defaultState = {
     { nom: '', prenom: '', dateNaissance: '', type: 'adulte', activitesSelectionnees: [], transportId: null, transportNom: '', transportPrix: 0 }
   ] as Voyageur[],
 
-  // Transport global (servira de valeur par défaut)
-  transportId: null as number | null,
-  transportNom: '',
-  transportPrix: 0,
-
   // Prix calculés
   prixActivites: 0,
   prixHT: 0,
@@ -96,7 +91,7 @@ export const calculerPrix = () => {
   ht += reservationState.prixActivites;
 
   // 3. Prix transport INDIVIDUEL (somme de chaque voyageur)
-  const totalTransport = reservationState.voyageurs.reduce((sum, v) => sum + (v.transportPrix || 0), 0);
+  const totalTransport = reservationState.voyageurs.reduce((sum: number, v: Voyageur) => sum + (v.transportPrix || 0), 0);
   ht += totalTransport;
 
   reservationState.prixHT = Math.round(ht * 100) / 100;
@@ -117,15 +112,12 @@ export const resetReservationState = () => {
   reservationState.dateFin = '';
   reservationState.nbPersonnes = 1;
   reservationState.voyageurs = [{ nom: '', prenom: '', dateNaissance: '', type: 'adulte', activitesSelectionnees: [], transportId: null, transportNom: '', transportPrix: 0 }];
-  reservationState.transportId = null;
-  reservationState.transportNom = '';
-  reservationState.transportPrix = 0;
   reservationState.prixActivites = 0;
   reservationState.prixHT = 0;
   reservationState.prixTTC = 0;
   reservationState.tva = 0.10;
 };
 
-export const getPrixChambreDefaut = (): number => {
+export const getPrixChambreDefaut = (nomType?: string): number => {
   return reservationState.typeChambrePrixNuit || 150;
 };

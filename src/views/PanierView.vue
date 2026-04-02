@@ -40,7 +40,7 @@
         <div class="panier-empty-icon">🏖️</div>
         <h2>Votre panier est vide</h2>
         <p>Découvrez nos destinations et commencez à planifier votre séjour de rêve.</p>
-        <router-link to="/reservation/step1" class="cm-btn cm-btn-primary" style="display:inline-flex;margin-top:20px;">
+        <router-link to="/annonces" class="cm-btn cm-btn-primary" style="display:inline-flex;margin-top:20px;">
           Réserver un séjour
         </router-link>
       </div>
@@ -115,7 +115,7 @@
             </div>
           </div>
 
-          <router-link to="/reservation/step1" class="panier-add-link">
+          <router-link to="/annonces" class="panier-add-link">
             + Ajouter un autre séjour
           </router-link>
         </div>
@@ -278,11 +278,6 @@ const showSuccessModal = ref(false);
 const stripeProcessing = ref(false);
 const stripeError = ref('');
 const paidCount = ref(0);
-
-const cardHolder = ref('');
-const cardNumber = ref('');
-const cardExpiry = ref('');
-const cardCvc = ref('');
 
 onMounted(async () => {
   // --- STRIPE REDIRECT CHECK ---
@@ -453,27 +448,6 @@ const modifierReservation = async (item: any) => {
 };
 
 // ─── STRIPE ────────────────────────────────────────
-const formatCardNumber = (e: Event) => {
-  let val = (e.target as HTMLInputElement).value.replace(/\D/g, '').substring(0, 16);
-  cardNumber.value = val.replace(/(.{4})/g, '$1 ').trim();
-};
-
-const formatExpiry = (e: Event) => {
-  let val = (e.target as HTMLInputElement).value.replace(/\D/g, '').substring(0, 4);
-  if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
-  cardExpiry.value = val;
-};
-
-const isCardValid = computed(() => {
-  const num = cardNumber.value.replace(/\s/g, '');
-  return (
-    cardHolder.value.trim().length >= 2 &&
-    num.length === 16 &&
-    cardExpiry.value.length === 5 &&
-    cardCvc.value.length === 3
-  );
-});
-
 const ouvrirStripe = async () => {
   if (selectedItems.value.length === 0) return;
   stripeError.value = '';
@@ -720,149 +694,6 @@ const formatDate = (dateString: string) => {
   border-radius: 20px;
 }
 
-/* ── MODAL STRIPE ────────────────────────────── */
-.stripe-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.stripe-modal {
-  background: white;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 460px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.3);
-  overflow: hidden;
-  animation: slideUp 0.3s ease;
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.stripe-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #fafafa;
-}
-.stripe-logo { display: flex; align-items: center; }
-.stripe-close {
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: #9ca3af;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-.stripe-close:hover { background: #f0f0f0; color: #374151; }
-
-.stripe-amount-box {
-  background: linear-gradient(135deg, var(--cm-bleu) 0%, #2d4a99 100%);
-  padding: 28px 24px;
-  text-align: center;
-  color: white;
-}
-.stripe-amount-box div:nth-child(2) { color: white !important; }
-
-.stripe-form { padding: 24px; }
-
-.stripe-field-group { margin-bottom: 16px; }
-.stripe-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.stripe-input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 15px;
-  font-family: 'Inter', monospace;
-  color: #111;
-  outline: none;
-  transition: all 0.2s;
-  background: #fafafa;
-  box-sizing: border-box;
-}
-.stripe-input:focus {
-  border-color: #6772e5;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(103, 114, 229, 0.15);
-}
-.stripe-card-input-wrap { position: relative; }
-.stripe-card-icons { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
-.stripe-card-icon { font-size: 20px; }
-.stripe-test-hint {
-  font-size: 11px;
-  color: #9ca3af;
-  margin-top: 4px;
-  background: #f3f4f6;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.stripe-error {
-  background: #FEE2E2;
-  border: 1px solid #F87171;
-  color: #991B1B;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin-bottom: 16px;
-}
-
-.stripe-pay-btn {
-  width: 100%;
-  padding: 15px;
-  background: #6772e5;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 12px;
-  font-family: 'Inter', sans-serif;
-}
-.stripe-pay-btn:hover:not(:disabled) { background: #5469d4; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(103,114,229,0.4); }
-.stripe-pay-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-.stripe-processing { display: flex; align-items: center; gap: 10px; justify-content: center; }
-.stripe-spinner {
-  width: 18px; height: 18px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: cm-spin 0.7s linear infinite;
-  display: inline-block;
-}
-.stripe-secure-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #9ca3af;
-}
-
 /* ── MODAL SUCCÈS ────────────────────────────── */
 .success-modal {
   background: white;
@@ -877,3 +708,4 @@ const formatDate = (dateString: string) => {
 .success-modal h2 { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--cm-bleu); margin-bottom: 12px; }
 .success-modal p { color: var(--cm-text-light); font-size: 15px; }
 </style>
+

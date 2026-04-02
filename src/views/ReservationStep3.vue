@@ -38,10 +38,10 @@
               v-for="(voyageur, index) in reservationState.voyageurs"
               :key="index"
               class="cm-tab"
-              :class="{ active: activeIndex === index }"
-              @click="activeIndex = index"
+              :class="{ active: activeIndex === Number(index) }"
+              @click="activeIndex = Number(index)"
             >
-              {{ voyageur.prenom || `Participant ${index + 1}` }}
+              {{ voyageur.prenom || `Participant ${Number(index) + 1}` }}
               <span :class="voyageur.type === 'adulte' ? 'cm-badge-adulte' : 'cm-badge-enfant'" style="margin-left:6px;">
                 {{ voyageur.type === 'adulte' ? '🧑' : '👧' }}
               </span>
@@ -140,7 +140,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import '@/assets/clubmed.css';
-import { reservationState, getNbNuits, calculerPrix } from '../stores/reservationState';
+import { reservationState, getNbNuits, calculerPrix, type Voyageur } from '../stores/reservationState';
 import reservationService from '../services/reservationService';
 
 const router = useRouter();
@@ -156,7 +156,7 @@ const prixSejour = computed(() =>
 );
 
 const totalTransportPrix = computed(() =>
-  reservationState.voyageurs.reduce((s, v) => s + (v.transportPrix || 0), 0)
+  reservationState.voyageurs.reduce((s: number, v: Voyageur) => s + (v.transportPrix || 0), 0)
 );
 
 onMounted(async () => {
@@ -178,7 +178,7 @@ const selectTransportForCurrent = (transport: any) => {
 const appliquerATous = () => {
     const current = activeVoyageur.value;
     if (!current) return;
-    reservationState.voyageurs.forEach(v => {
+    reservationState.voyageurs.forEach((v: Voyageur) => {
         v.transportId = current.transportId;
         v.transportNom = current.transportNom;
         v.transportPrix = current.transportPrix;

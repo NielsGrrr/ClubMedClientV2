@@ -26,11 +26,6 @@ export default {
     return response.data;
   },
 
-  async getActivitesAdultes() {
-    const response = await api.get('/ActiviteAdultes');
-    return response.data;
-  },
-
   async getTransports() {
     const response = await api.get('/Transports');
     return response.data;

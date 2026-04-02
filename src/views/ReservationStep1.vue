@@ -25,11 +25,6 @@
 
     <div class="cm-page">
       <div class="cm-page-header">
-        <div v-if="reservationState.editMode" class="cm-alert cm-alert-info" style="margin-bottom:16px;">
-          ✏️ Vous modifiez la réservation <strong>#{{ reservationState.editResaNum }}</strong>.
-          Les dates et le nombre de personnes ont été pré-remplis.
-          <br><span style="font-size:12px;opacity:0.8;">⚠️ Les noms, prénoms et dates de naissance ne sont pas conservés en base de données — veuillez les resaisir.</span>
-        </div>
         <h1>{{ reservationState.clubTitre }}</h1>
         <p>Sélectionnez votre séjour, vos dates et vos participants</p>
       </div>
@@ -139,7 +134,7 @@
             >
               <div class="cm-traveler-header">
                 <div class="cm-traveler-header-left">
-                  <span>Participant {{ index + 1 }}</span>
+                  <span>Participant {{ Number(index) + 1 }}</span>
                   <span v-if="voyageur.dateNaissance" :class="voyageur.type === 'adulte' ? 'cm-badge-adulte' : 'cm-badge-enfant'">
                     {{ voyageur.type === 'adulte' ? '🧑 Adulte' : `👧 Enfant ${getAge(voyageur.dateNaissance)} ans` }}
                   </span>
@@ -147,7 +142,7 @@
                 <button
                   v-if="reservationState.nbPersonnes > 1"
                   class="cm-btn-remove"
-                  @click="removeSpecificVoyageur(index)"
+                  @click="removeSpecificVoyageur(Number(index))"
                 >✕ Retirer</button>
               </div>
               <div class="cm-traveler-body">
@@ -265,12 +260,12 @@ const minDateFin = computed(() =>
 const nbNuits = computed(() => getNbNuits());
 const maxCapacite = computed(() => (reservationState.typeChambreCapaciteMax || 10) * reservationState.nbChambres);
 
-const nbAdultes = computed(() => reservationState.voyageurs.filter(v => v.type === 'adulte').length);
-const nbEnfants = computed(() => reservationState.voyageurs.filter(v => v.type === 'enfant').length);
-const hasAnyBirthdate = computed(() => reservationState.voyageurs.some(v => v.dateNaissance));
+const nbAdultes = computed(() => reservationState.voyageurs.filter((v: Voyageur) => v.type === 'adulte').length);
+const nbEnfants = computed(() => reservationState.voyageurs.filter((v: Voyageur) => v.type === 'enfant').length);
+const hasAnyBirthdate = computed(() => reservationState.voyageurs.some((v: Voyageur) => v.dateNaissance));
 
 const alerteMineurSeul = computed(() => {
-  const allHaveDate = reservationState.voyageurs.every(v => v.dateNaissance);
+  const allHaveDate = reservationState.voyageurs.every((v: Voyageur) => v.dateNaissance);
   if (!allHaveDate) return false;
   return nbAdultes.value === 0 && nbEnfants.value > 0;
 });
