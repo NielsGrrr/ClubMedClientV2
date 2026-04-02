@@ -132,6 +132,20 @@ const valider = async () => {
   loading.value = true;
   erreur.value = '';
   try {
+    // 0. SEEDING FRONT : S'assurer que le client #1 et le transport #1 existent sur Azure
+    try {
+        const c1 = await reservationService.getClient(1);
+        if (!c1) {
+            await reservationService.createClient({ numClient: 1, nom: "Client", prenom: "Systeme", email: "system@clubmed.com", telephone: "0102030405" });
+        }
+        const t1 = await reservationService.getTransport(1);
+        if (!t1) {
+            await reservationService.createTransport({ transportId: 1, transportLieuDepart: "Aéroport (Défaut)", transportPrix: 50 });
+        }
+    } catch (e) {
+        console.warn("Erreur auto-seeding front (non critique):", e);
+    }
+
     // 1. Sauvegarde/Mise à jour de la réservation principale
     const resaPayload = {
       resaNum: reservationState.editResaNum || 0,
@@ -186,8 +200,9 @@ const valider = async () => {
     resetReservationState();
     router.push('/panier');
   } catch (e: any) {
-    erreur.value = "Erreur lors de l'enregistrement.";
-    console.error(e);
+    const errorMsg = e.response?.data?.detail || e.response?.data?.title || e.message;
+    erreur.value = `Erreur lors de l'enregistrement : ${errorMsg}`;
+    console.error("Détails erreur sauvegarde:", e.response?.data || e);
   } finally { loading.value = false; }
 };
 </script>

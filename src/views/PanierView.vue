@@ -411,16 +411,21 @@ const modifierReservation = async (item: any) => {
 
     // 2. Reconstruire la liste des VOYAGEURS avec leurs détails spécifiques
     if (fullResa.sousReservations && fullResa.sousReservations.length > 0) {
-      reservationState.voyageurs = fullResa.sousReservations.map((sr: any) => ({
-        nom: sr.sousReservationNom || '',
-        prenom: sr.sousReservationPrenom || '',
-        dateNaissance: sr.sousReservationDateNaissance ? sr.sousReservationDateNaissance.split('T')[0] : '',
-        type: sr.sousReservationType || 'adulte',
-        transportId: sr.transportId,
-        transportNom: '', // Sera rempli par les composants au chargement
-        transportPrix: 0,
-        activitesSelectionnees: sr.sousReservationActivites?.map((sra: any) => sra.activiteId) || []
-      }));
+      reservationState.voyageurs = fullResa.sousReservations.map((sr: any) => {
+        // Log pour debug (sera visible dans votre console)
+        console.log("Mapping participant:", sr);
+        
+        return {
+          nom: sr.sousReservationNom || sr.SousReservationNom || '',
+          prenom: sr.sousReservationPrenom || sr.SousReservationPrenom || '',
+          dateNaissance: (sr.sousReservationDateNaissance || sr.SousReservationDateNaissance)?.split('T')[0] || '',
+          type: (sr.sousReservationType || sr.SousReservationType || 'adulte').toLowerCase(),
+          transportId: sr.transportId || sr.TransportId,
+          transportNom: '', 
+          transportPrix: 0,
+          activitesSelectionnees: (sr.sousReservationActivites || sr.SousReservationActivites)?.map((sra: any) => sra.activiteId || sra.ActiviteId) || []
+        };
+      });
     } else {
       // Fallback si pas de sous-réservations trouvées
       reservationState.voyageurs = Array.from({ length: reservationState.nbPersonnes }, () => ({
