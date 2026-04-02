@@ -10,7 +10,6 @@ defineProps({
       <div class="stars-row">
         <span v-for="n in 5" :key="n" :class="{ 'gold': n <= unAvis.note }">★</span>
       </div>
-      <span class="date">{{ new Date(unAvis.dateAvis).toLocaleDateString() }}</span>
     </div>
     <p class="comment">"{{ unAvis.commentaire }}"</p>
   </div>

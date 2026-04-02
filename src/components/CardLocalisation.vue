@@ -8,7 +8,7 @@ defineProps({
   <div class="card-loc">
     <div class="photo-wrapper">
       <img
-        :src="`/images/locations/${localisation.numLocalisation}.webp`"
+        :src="`/images/ressort/${localisation.numLocalisation}.webp`"
         :alt="localisation.nomLocalisation"
         class="loc-img"
         onerror="this.src='/images/placeholder-dest.webp'"

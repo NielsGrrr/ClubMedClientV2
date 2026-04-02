@@ -25,7 +25,7 @@ onMounted(async () => {
       <p>Trouvez le cadre idéal pour vos prochaines vacances</p>
     </header>
 
-    <div v-if="loading" class="loader">Chargement des pépites...</div>
+    <div v-if="loading" class="loader">Chargement du poulet...</div>
 
     <div v-else class="grid">
       <CardLocalisation

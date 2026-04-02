@@ -12,9 +12,6 @@ defineProps({ chambre: Object });
         <span class="tag">👥 {{ chambre.capaciteMax }} pers.</span>
       </div>
     </div>
-    <div class="chambre-action">
-      <button class="btn-outline">Choisir</button>
-    </div>
   </div>
 </template>
 
