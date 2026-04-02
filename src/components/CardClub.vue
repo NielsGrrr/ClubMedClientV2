@@ -31,6 +31,13 @@ const tronquerTexte = (texte, limite) => {
 </template>
 
 <style scoped>
+.btn-primary, .btn-loc, .btn-detail {
+  box-sizing: border-box;
+  width: 100%;
+  display: block;
+  padding: 12px;
+}
+
 .card {
   background: white;
   border-radius: 16px;

@@ -2,15 +2,14 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import annoncesService from '@/services/AnnonceService';
-// Import de ta logique de favoris
+import CardChambre from '@/components/CardChambre.vue';
+import CardAvis from '@/components/CardAvis.vue';
 import { toggleFavori, estFavori } from '@/services/favoris';
 
 const route = useRoute();
 const club = ref(null);
 const loading = ref(true);
-const error = ref(null);
 
-// Propriété calculée pour savoir si le club actuel est en favori
 const isFav = computed(() => {
   return club.value ? estFavori(club.value.idClub) : false;
 });
@@ -21,8 +20,7 @@ onMounted(async () => {
     const response = await annoncesService.getClubsById(id);
     club.value = response.data;
   } catch (err) {
-    error.value = "Impossible de charger les détails du village.";
-    console.error(err);
+    console.error("Erreur chargement:", err);
   } finally {
     loading.value = false;
   }
@@ -62,36 +60,24 @@ onMounted(async () => {
         <section class="section-chambres">
           <h2 class="section-title">Nos hébergements</h2>
           <div class="chambres-list">
-            <div v-for="chambre in club.typeChambres" :key="chambre.idTypeChambre" class="chambre-card">
-              <div class="chambre-content">
-                <h3>{{ chambre.nomType }}</h3>
-                <p>{{ chambre.textePresentation }}</p>
-                <div class="tags">
-                  <span class="tag"><i class="icon">📐</i> {{ chambre.surface }}m²</span>
-                  <span class="tag"><i class="icon">👥</i> Jusqu'à {{ chambre.capaciteMax }} pers.</span>
-                </div>
-              </div>
-              <div class="chambre-action">
-                <button class="btn-outline">Choisir</button>
-              </div>
-            </div>
+            <CardChambre
+              v-for="chambre in club.typeChambres"
+              :key="chambre.idTypeChambre"
+              :chambre="chambre"
+            />
           </div>
         </section>
 
         <section class="section-avis">
           <h2 class="section-title">Paroles de G.M</h2>
           <div v-if="club.avis?.length > 0" class="avis-grid">
-            <div v-for="unAvis in club.avis" :key="unAvis.idAvis" class="avis-card">
-              <div class="avis-header">
-                <div class="stars-row">
-                  <span v-for="n in 5" :key="n" :class="{ 'gold': n <= unAvis.note }">★</span>
-                </div>
-                <span class="date">{{ new Date(unAvis.dateAvis).toLocaleDateString() }}</span>
-              </div>
-              <p class="comment">"{{ unAvis.commentaire }}"</p>
-            </div>
+            <CardAvis
+              v-for="unAvis in club.avis"
+              :key="unAvis.idAvis"
+              :un-avis="unAvis"
+            />
           </div>
-          <div v-else class="no-avis">Soyez le premier à laisser un avis sur ce village !</div>
+          <div v-else class="no-avis">Soyez le premier à laisser un avis !</div>
         </section>
       </div>
 
@@ -111,45 +97,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* AJOUTS POUR LES FAVORIS */
-.title-with-fav {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.btn-fav {
-  background: none;
-  border: 1px solid #ddd;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 45px;
-  height: 45px;
-}
-
-.btn-fav:hover {
-  transform: scale(1.1);
-  border-color: #e63946;
-}
-
-.btn-fav.is-active {
-  background-color: #fff1f2;
-  border-color: #e63946;
-}
-
-/* LE RESTE DE TON CSS RESTE INCHANGÉ */
+/* CSS UNIQUE AU PARENT (LAYOUT GLOBAL) */
 .detail-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Inter', sans-serif;
-  color: #2d3436;
 }
 
 .gallery-mosaic {
@@ -162,151 +115,29 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-.main-photo img, .sub-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.main-photo:hover img, .sub-photo:hover img {
-  transform: scale(1.05);
-}
-
-.secondary-photos {
-  display: grid;
-  grid-template-rows: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.more-photos {
-  background: #f1f2f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: #002f6c;
-  cursor: pointer;
-}
+.main-photo img, .sub-photo img { width: 100%; height: 100%; object-fit: cover; }
+.secondary-photos { display: grid; grid-template-rows: repeat(2, 1fr); gap: 12px; }
+.more-photos { background: #f1f2f6; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #002f6c; }
 
 .info-layout { display: grid; grid-template-columns: 1fr 380px; gap: 60px; }
 
-.title-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
+.title-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.title-with-fav { display: flex; align-items: center; gap: 15px; }
 h1 { font-size: 2.8rem; color: #002f6c; margin: 0; }
 
-.rating-badge {
-  background: #002f6c;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-weight: bold;
+.rating-badge { background: #002f6c; color: white; padding: 8px 16px; border-radius: 50px; font-weight: bold; }
+.description { font-size: 1.1rem; line-height: 1.7; color: #636e72; margin-bottom: 40px; }
+.section-title { font-size: 1.8rem; margin-bottom: 30px; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; color: #002f6c; }
+
+.btn-fav {
+  background: white; border: 1px solid #ddd; font-size: 1.5rem; cursor: pointer;
+  border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;
 }
+.btn-fav.is-active { background-color: #fff1f2; border-color: #e63946; }
 
-.description {
-  font-size: 1.1rem;
-  line-height: 1.7;
-  color: #636e72;
-  margin-bottom: 40px;
-}
-
-.section-title {
-  font-size: 1.8rem;
-  margin-bottom: 30px;
-  border-bottom: 2px solid #f1f2f6;
-  padding-bottom: 10px;
-}
-
-.chambre-card {
-  display: flex;
-  justify-content: space-between;
-  padding: 30px;
-  background: #ffffff;
-  border: 1px solid #e1e8ed;
-  border-radius: 16px;
-  margin-bottom: 20px;
-  transition: all 0.3s ease;
-}
-
-.chambre-card:hover {
-  border-color: #002f6c;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-}
-
-.chambre-content h3 { margin: 0 0 10px 0; color: #002f6c; }
-
-.tag {
-  display: inline-block;
-  background: #f1f2f6;
-  padding: 6px 12px;
-  border-radius: 6px;
-  margin-right: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.avis-card {
-  padding: 25px;
-  background: #f8fafc;
-  border-radius: 16px;
-  margin-bottom: 20px;
-}
-
-.stars-row { color: #dfe6e9; font-size: 1.2rem; }
-.stars-row .gold { color: #fdcb6e; }
-
-.comment { font-style: italic; color: #2d3436; margin: 15px 0; }
-
-.booking-card {
-  position: sticky;
-  top: 30px;
-  padding: 35px;
-  background: white;
-  border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-  border: 1px solid #f1f2f6;
-}
-
-.price-label { font-size: 0.9rem; color: #636e72; }
+.booking-card { position: sticky; top: 30px; padding: 35px; background: white; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid #f1f2f6; }
 .price-value { font-size: 2rem; font-weight: 800; color: #002f6c; }
-.price-value span { font-size: 1rem; font-weight: 400; color: #636e72; }
-
-.btn-reserve {
-  width: 100%;
-  background: #002f6c;
-  color: white;
-  padding: 18px;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.btn-reserve:hover { background: #001d44; }
-
-.btn-outline {
-  background: transparent;
-  border: 2px solid #002f6c;
-  color: #002f6c;
-  padding: 10px 25px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.link-pdf {
-  display: block;
-  text-align: center;
-  margin-top: 15px;
-  color: #636e72;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
+.btn-reserve { width: 100%; background: #002f6c; color: white; padding: 18px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+.link-pdf { display: block; text-align: center; margin-top: 15px; color: #636e72; text-decoration: none; font-size: 0.9rem; }
+.no-avis { padding: 30px; background: #f8fafc; border-radius: 16px; text-align: center; color: #636e72; }
 </style>
