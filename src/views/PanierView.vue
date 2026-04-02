@@ -410,10 +410,12 @@ const modifierReservation = async (item: any) => {
     reservationState.nbChambres = Math.ceil(reservationState.nbPersonnes / 2) || 1;
 
     // 2. Reconstruire la liste des VOYAGEURS avec leurs détails spécifiques
-    if (fullResa.sousReservations && fullResa.sousReservations.length > 0) {
-      reservationState.voyageurs = fullResa.sousReservations.map((sr: any) => {
-        // Log pour debug (sera visible dans votre console)
-        console.log("Mapping participant:", sr);
+    // Support de la casse PascalCase (Backend .NET) et camelCase (Vite/Vue)
+    const rawSousResas = fullResa.sousReservations || fullResa.SousReservations || [];
+    
+    if (rawSousResas.length > 0) {
+      reservationState.voyageurs = rawSousResas.map((sr: any) => {
+        console.log("Mapping participant (Azure):", sr);
         
         return {
           nom: sr.sousReservationNom || sr.SousReservationNom || '',
