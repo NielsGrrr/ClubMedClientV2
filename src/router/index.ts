@@ -24,7 +24,7 @@ const router = createRouter({
     {
       path: '/chambres',
       name: 'types-chambres',
-      component: TypeChambreList 
+      component: TypeChambreList
     },
     {
       path: '/admin/resorts',
@@ -76,7 +76,7 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/typeChambres', // Note: vous avez défini 2 routes pour les chambres, j'ai gardé les deux.
+      path: '/typeChambres',
       name: 'types-chambres-static',
       component: TypeChambreList
     },
@@ -87,7 +87,7 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/localisations', // J'ai remplacé '/' par '/localisations' pour ne pas écraser 'home'
+      path: '/localisations',
       name: 'localisations',
       component: LocalisationList
     },
@@ -116,7 +116,7 @@ const router = createRouter({
     {
       path: '/mes-favoris',
       name: 'favoris-list',
-      component: () => import('../views/FavorisList.vue') // Utilise l'import dynamique 
+      component: () => import('../views/FavorisList.vue') // Utilise l'import dynamique
     }
   ],
   scrollBehavior() {
@@ -124,21 +124,31 @@ const router = createRouter({
   }
 })
 
-router.beforeEach((to, from) => {
+router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
-  // Guard admin
-  if (to.meta.requiresAdmin) {
-    if (localStorage.getItem('isAdmin') !== 'true') {
-      return '/login'
-    }
+  const isAdmin = localStorage.getItem('isAdmin') === 'true'
+  if (to.meta.requiresAdmin && !isAdmin) {
+    return next({ name: 'home' }) // Redirige si pas admin
   }
-  
-  // Guard auth classique
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    return '/login'
+    return next({ name: 'login' }) // Redirige vers login si non connecté
   }
-  return true
+  next()
+})
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth) {
+    // --- GESTION DE L'AUTHENTIFICATION (Dev 2) ---
+    // const authStore = useAuthStore()
+    // if (!authStore.isAuthenticated) {
+    //   return next({ name: 'login' })
+    // }
+
+    // En attendant le store de Dev 2, on laisse passer
+    next()
+  } else {
+    next()
+  }
 })
 
 

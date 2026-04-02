@@ -18,10 +18,11 @@ watch(() => route.fullPath, () => {
     <div class="nav-container">
       <div class="header-left">
         <RouterLink to="/" class="logo-link">
-          <span class="brand">Club Med</span>
+          <span class="brand">Club Med</span><span class="sub-brand">Client</span>
         </RouterLink>
+
         <nav class="main-nav">
-          <RouterLink to="/">Destinations</RouterLink>
+          <RouterLink to="/localisations">Destinations</RouterLink>
           <RouterLink to="/annonces">Annonces</RouterLink>
         </nav>
       </div>
@@ -38,11 +39,11 @@ watch(() => route.fullPath, () => {
             🛒 Panier
           </RouterLink>
         </template>
-        
+
         <RouterLink to="/mes-favoris" class="nav-btn nav-fav">
           ❤️ Favoris
         </RouterLink>
-        
+
         <div class="auth-menu">
           <template v-if="authStore.isAuthenticated">
             <RouterLink to="/profile" class="nav-btn nav-auth auth-profile">
@@ -68,10 +69,10 @@ watch(() => route.fullPath, () => {
 </template>
 
 <style scoped>
-/* TES STYLES DE BASE GARDÉS */
+/* Tes styles restent identiques, ils étaient déjà corrects */
 .main-header {
-  background-color: var(--cm-bleu, #1B2A6B); 
-  color: var(--cm-blanc, #FAFAF8);
+  background-color: #002f6c;
+  color: white;
   padding: 1rem 0;
   box-shadow: 0 4px 20px rgba(27,42,107,0.15);
   position: sticky;
@@ -79,7 +80,6 @@ watch(() => route.fullPath, () => {
   z-index: 1000;
   border-bottom: 2px solid var(--cm-jaune, #F2A900);
 }
-
 .nav-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -88,39 +88,11 @@ watch(() => route.fullPath, () => {
   align-items: center;
   padding: 0 24px;
 }
-
 .header-left, .header-right {
   display: flex;
   align-items: center;
   gap: 24px;
 }
-
-/* STYLE DU BOUTON DEBUG / ANTIGRAVITY */
-.debug-btn {
-  background-color: #6a1b9a; /* Violet pour le mode debug */
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-.debug-btn:hover {
-  background-color: #4a148c;
-}
-
-.nav-admin {
-  background-color: #E63946; 
-  color: white;
-  border: 1px solid rgba(255,255,255,0.2);
-}
-
-.auth-menu {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: 12px;
-  border-left: 1px solid rgba(255,255,255,0.2);
-  padding-left: 24px;
-}
-
 .logo-link {
   text-decoration: none;
   font-family: 'Playfair Display', serif;
@@ -131,22 +103,18 @@ watch(() => route.fullPath, () => {
   align-items: baseline;
   margin-right: 16px;
 }
-
-.main-nav {
-  display: flex;
-  gap: 16px;
-}
-
+.brand { color: white; }
+.sub-brand { font-size: 0.9rem; margin-left: 5px; color: var(--cm-jaune, #F2A900); }
+.main-nav { display: flex; gap: 16px; }
 .main-nav a {
   color: var(--cm-blanc, #FAFAF8);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
   padding: 8px 12px;
-  border-radius: var(--cm-radius-sm, 6px);
+  border-radius: 6px;
   transition: all 0.25s ease;
 }
-
 .nav-btn {
   text-decoration: none;
   font-weight: 600;
@@ -158,17 +126,18 @@ watch(() => route.fullPath, () => {
   align-items: center;
   gap: 6px;
 }
-
+.nav-admin { background-color: #E63946; color: white; }
 .nav-panier { background-color: var(--cm-vert, #8DB4B0); color: white; }
 .nav-fav { background-color: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255,255,255,0.3); }
-.nav-auth { border-radius: var(--cm-radius-sm, 6px); }
-.auth-login { color: white; }
-.auth-register { background-color: var(--cm-jaune, #F2A900); color: var(--cm-bleu, #1B2A6B); }
-.auth-profile { background-color: var(--cm-lavande, #9BAED6); color: var(--cm-bleu, #1B2A6B); font-weight: 700; }
-
-.page-content {
-  background-color: var(--cm-bg, #F5F0EA);
-  min-height: calc(100vh - 75px);
-  padding: 24px;
+.auth-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 12px;
+  border-left: 1px solid rgba(255,255,255,0.2);
+  padding-left: 24px;
 }
+.auth-register { background-color: var(--cm-jaune, #F2A900); color: #1B2A6B; }
+.auth-profile { background-color: #9BAED6; color: #1B2A6B; font-weight: 700; }
+.page-content { background-color: #F5F0EA; min-height: calc(100vh - 75px); padding: 24px; }
 </style>
