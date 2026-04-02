@@ -242,6 +242,7 @@ import {
   type Voyageur,
 } from '../stores/reservationState';
 import reservationService from '../services/reservationService';
+import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
 const loadingChambres = ref(true);
@@ -278,6 +279,15 @@ const prixChambreTotal = computed(() => {
 const getAge = (dateNaissance: string) => calculerAge(dateNaissance);
 
 onMounted(async () => {
+    const authStore = useAuthStore();
+    if (authStore.user && reservationState.voyageurs.length > 0 && !reservationState.voyageurs[0].nom) {
+      reservationState.voyageurs[0].nom = authStore.user.nom || '';
+      reservationState.voyageurs[0].prenom = authStore.user.prenom || '';
+      if (authStore.user.dateNaissance) {
+        reservationState.voyageurs[0].dateNaissance = authStore.user.dateNaissance.split('T')[0];
+        updateVoyageurType(reservationState.voyageurs[0]);
+      }
+    }
   try {
     const all = await reservationService.getTypeChambresByClub(reservationState.clubId);
     typesChambres.value = all.length > 0 ? all : await reservationService.getTypeChambres();

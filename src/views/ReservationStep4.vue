@@ -106,8 +106,10 @@ import { useRouter } from 'vue-router';
 import '@/assets/clubmed.css';
 import { reservationState, getNbNuits, resetReservationState } from '../stores/reservationState';
 import reservationService from '../services/reservationService';
+import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
+const authStore = useAuthStore();
 const loading = ref(false);
 const erreur = ref('');
 const activitesRef = ref<any[]>([]);
@@ -142,7 +144,7 @@ const valider = async () => {
       resaNum: reservationState.editResaNum || 0,
       clubId: reservationState.clubId,
       transportId: reservationState.voyageurs[0]?.transportId || 1,
-      clientNum: 1, // Payeur principal
+        clientNum: authStore.user?.numClient || 1, // Payeur principal
       resaDateDebut: reservationState.dateDebut ? new Date(reservationState.dateDebut).toISOString() : null,
       resaDateFin: reservationState.dateFin ? new Date(reservationState.dateFin).toISOString() : null,
       resaNbPersonnes: reservationState.nbPersonnes,
@@ -168,7 +170,7 @@ const valider = async () => {
         
         const subResaPayload = {
             resaNum: resaNum,
-            clientNum: 1, // TOUS sur le même client
+            clientNum: authStore.user?.numClient || 1, // TOUS sur le même client
             transportId: v.transportId || 1,
             sousReservationNom: v.nom || '',
             sousReservationPrenom: v.prenom || '',
@@ -217,3 +219,4 @@ const valider = async () => {
 .cm-detail-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 60%; }
 .cm-mini-badge { background: var(--cm-vert); color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 </style>
+

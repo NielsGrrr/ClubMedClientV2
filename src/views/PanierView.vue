@@ -256,7 +256,10 @@ import panierService from '../services/panierService';
 import reservationService from '../services/reservationService';
 import { reservationState, resetReservationState } from '../stores/reservationState';
 
+import { useAuthStore } from '../stores/auth';
+
 const router = useRouter();
+const authStore = useAuthStore();
 
 // ─── ÉTAT GÉNÉRAL ──────────────────────────────────
 const activeTab = ref<'panier' | 'reservations'>('panier');
@@ -269,8 +272,7 @@ const confirmedItems = ref<any[]>([]);
 const clubs = ref<any[]>([]);
 const selectedItems = ref<number[]>([]);
 
-// ⚠️ clientNum hardcodé à 1 — voir probleme.md
-const CLIENT_ID = 1;
+const CLIENT_ID = computed(() => authStore.user?.numClient || 1);
 
 // ─── STRIPE ────────────────────────────────────────
 const showStripeModal = ref(false);
@@ -314,7 +316,7 @@ onMounted(async () => {
 const fetchCart = async () => {
   loading.value = true;
   try {
-    cartItems.value = await panierService.getCart(CLIENT_ID);
+    cartItems.value = await panierService.getCart(CLIENT_ID.value);
     // Auto-sélectionner tous les items au chargement
     selectedItems.value = cartItems.value.map((i: any) => i.resaNum);
   } catch {
@@ -327,7 +329,7 @@ const fetchCart = async () => {
 const fetchReservations = async () => {
   loadingReservations.value = true;
   try {
-    confirmedItems.value = await panierService.getMesReservations(CLIENT_ID);
+    confirmedItems.value = await panierService.getMesReservations(CLIENT_ID.value);
   } catch {
     console.error('Erreur chargement réservations');
   } finally {
@@ -708,4 +710,6 @@ const formatDate = (dateString: string) => {
 .success-modal h2 { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--cm-bleu); margin-bottom: 12px; }
 .success-modal p { color: var(--cm-text-light); font-size: 15px; }
 </style>
+
+
 

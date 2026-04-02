@@ -49,26 +49,31 @@ const router = createRouter({
       path: '/reservation/step1',
       name: 'reservationStep1',
       component: () => import('../views/ReservationStep1.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/reservation/step2',
       name: 'reservationStep2',
       component: () => import('../views/ReservationStep2.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/reservation/step3',
       name: 'reservationStep3',
       component: () => import('../views/ReservationStep3.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/reservation/step4',
       name: 'reservationStep4',
       component: () => import('../views/ReservationStep4.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/panier',
       name: 'panier',
       component: () => import('../views/PanierView.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/typeChambres', // Note: vous avez défini 2 routes pour les chambres, j'ai gardé les deux.
@@ -146,3 +151,4 @@ router.beforeEach((to, from, next) => {
 
 
 export default router
+
