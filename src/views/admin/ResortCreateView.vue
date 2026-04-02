@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminResortStore } from '@/stores/adminResorts'
 import type { Resort } from '@/stores/adminResorts'
+import adminService from '@/services/adminService'
 
 const router = useRouter()
 const resortStore = useAdminResortStore()
@@ -12,12 +13,35 @@ const formData = reactive<Partial<Resort>>({
   description: '',
   localisation: '',
   typeSejour: '',
-  prixBase: 0
+  statutMiseEnLigne: 'EN_CREATION'
 })
 
+const fileInput = ref<HTMLInputElement | null>(null)
+const isUploading = ref(false)
+
 const handleSubmit = async () => {
-  const success = await resortStore.createResort(formData)
-  if (success) {
+  // on crée le séjour et on récupère son ID !
+  const newResortId = await resortStore.createResort(formData)
+  
+  if (newResortId) {
+    if (fileInput.value && fileInput.value.files && fileInput.value.files.length > 0) {
+      isUploading.value = true
+      try {
+        const formDataFiles = new FormData()
+        for (let i = 0; i < fileInput.value.files.length; i++) {
+          const file = fileInput.value.files.item(i)
+          if (file) formDataFiles.append('photos', file)
+        }
+        await adminService.uploadPhotos(newResortId, formDataFiles)
+        alert('Séjour créé ET photos uploadées avec succès !')
+      } catch (e: any) {
+        alert('Création réussie, mais échec du téléversement : ' + e.message)
+      } finally {
+        isUploading.value = false
+      }
+    } else {
+      alert('Séjour créé avec succès (sans image) !')
+    }
     router.push({ name: 'admin-resorts' })
   }
 }
@@ -61,9 +85,21 @@ const handleSubmit = async () => {
         </div>
       </div>
 
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="statut">Statut initial</label>
+          <select id="statut" v-model="formData.statutMiseEnLigne">
+            <option value="EN_CREATION">Brouillon (En création)</option>
+            <option value="EN_LIGNE">Publié (En ligne)</option>
+            <option value="ARCHIVE">Archivé</option>
+          </select>
+        </div>
+      </div>
+
       <div class="form-group">
-        <label for="prixBase">Prix de base (€)</label>
-        <input id="prixBase" v-model.number="formData.prixBase" type="number" min="0" step="0.01" required />
+        <label>Télécharger des Images (Optionnel, liées lors de la création)</label>
+        <input type="file" multiple accept="image/*" ref="fileInput" />
+        <small v-if="isUploading">Téléversement des images en cours...</small>
       </div>
 
       <div class="form-actions">

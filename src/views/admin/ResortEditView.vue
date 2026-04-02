@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAdminResortStore } from '@/stores/adminResorts'
 import type { Resort } from '@/stores/adminResorts'
 
+import adminService from '@/services/adminService'
+
 const route = useRoute()
 const router = useRouter()
 const resortStore = useAdminResortStore()
@@ -15,13 +17,13 @@ const formData = reactive<Partial<Resort>>({
   description: '',
   localisation: '',
   typeSejour: '',
-  prixBase: 0,
   photos: [],
   indisponibilites: []
 })
 
-const newPhotoUrl = ref('')
 const newDateFermeture = ref('')
+const isUploading = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 onMounted(async () => {
   if (resortId) {
@@ -40,11 +42,36 @@ onMounted(async () => {
   }
 })
 
-// HU 55 : Gérer l'ajout/suppression de photos simulé
-const addPhoto = () => {
-  if (newPhotoUrl.value && formData.photos) {
-    formData.photos.push(newPhotoUrl.value)
-    newPhotoUrl.value = ''
+// HU 55 : Gérer l'upload réel de photos vers l'API
+const handleFilesSelection = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  if (!target.files || target.files.length === 0) return
+  
+  const formDataFiles = new FormData()
+  for (let i = 0; i < target.files.length; i++) {
+    const file = target.files.item(i)
+    if (file) {
+      formDataFiles.append('photos', file)
+    }
+  }
+
+  isUploading.value = true
+  try {
+    const res = await adminService.uploadPhotos(resortId, formDataFiles)
+    alert('Succès : ' + (res.data.message || 'Photos téléversées !'))
+    
+    // Ajout visuel temporaire (car l'API actuelle ne lie pas l'image dans la DB)
+    for (let i = 0; i < target.files.length; i++) {
+      const file = target.files.item(i)
+      if (file) {
+        formData.photos?.push(URL.createObjectURL(file))
+      }
+    }
+  } catch (err: any) {
+    alert('Erreur lors de l\'upload : ' + (err.response?.data || err.message))
+  } finally {
+    isUploading.value = false
+    if (fileInput.value) fileInput.value.value = ''
   }
 }
 
@@ -124,24 +151,28 @@ const handleSubmit = async () => {
             </select>
           </div>
         </div>
-
-        <div class="form-group">
-          <label for="prixBase">Prix de base (€)</label>
-          <input id="prixBase" v-model.number="formData.prixBase" type="number" min="0" step="0.01" required />
-        </div>
       </fieldset>
 
       <!-- Section Photos (HU 55) -->
       <fieldset>
-        <legend>Galerie Photos (HU 55)</legend>
+        <legend>Galerie Photos (HU 55 - Téléversement Serveur)</legend>
         <div class="add-item-group">
-          <input v-model="newPhotoUrl" type="url" placeholder="https://exemple.com/image.jpg" @keyup.enter.prevent="addPhoto" />
-          <button type="button" @click="addPhoto" class="btn btn-secondary btn-sm">Ajouter Photo</button>
+          <!-- Vrai explorateur de fichiers ! -->
+          <input 
+            type="file" 
+            multiple 
+            accept="image/*" 
+            ref="fileInput" 
+            @change="handleFilesSelection" 
+            :disabled="isUploading"
+          />
+          <span v-if="isUploading" class="uploading-text">Téléversement en cours...</span>
         </div>
         <ul class="item-list" v-if="formData.photos && formData.photos.length > 0">
           <li v-for="(photo, index) in formData.photos" :key="`p-${index}`">
             <img :src="photo" class="thumbnail" alt="Aperçu" />
-            <span class="item-text">{{ photo }}</span>
+            <span class="item-text" v-if="photo.startsWith('blob:')">Nouvelle image (Aperçu)</span>
+            <span class="item-text" v-else>{{ photo }}</span>
             <button type="button" @click="removePhoto(index)" class="btn-remove" title="Retirer">X</button>
           </li>
         </ul>
@@ -246,6 +277,9 @@ input:focus, textarea:focus, select:focus {
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-primary { background-color: #1976d2; color: white; }
 .btn-secondary { background-color: #9e9e9e; color: white; }
+.btn-danger { background-color: #d32f2f; color: white; }
 .error-message { padding: 1rem; background-color: #ffebee; color: #d32f2f; border-radius: 4px; margin-bottom: 1.5rem; }
 .loading-message { text-align: center; padding: 2rem; color: #666; font-weight: 500; }
+.uploading-text { color: #1976d2; font-weight: bold; font-size: 0.9rem; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 </style>

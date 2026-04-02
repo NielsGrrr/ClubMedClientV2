@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/stores/auth'; // On utilise ton store
 
 const authStore = useAuthStore();
+
+// LA FONCTION "ANTIGRAVITY" 🛸
+// Elle force le rôle admin dans le store Pinia sans passer par l'API
+const toggleAdminMode = () => {
+  if (authStore.user) {
+    authStore.updateUser({ role: 'admin' }); // Utilise ton action updateUser
+    alert("🚀 Mode Admin Activé ! Le bouton 🛠️ Admin va apparaître.");
+  } else {
+    alert("❌ Connecte-toi d'abord avec n'importe quel compte pour utiliser ce bouton.");
+  }
+};
 </script>
 
 <template>
@@ -19,6 +30,12 @@ const authStore = useAuthStore();
       </div>
 
       <div class="header-right">
+        <template v-if="authStore.isAuthenticated && authStore.user?.role === 'admin'">
+          <RouterLink to="/admin/resorts" class="nav-btn nav-admin">
+            🛠️ Admin
+          </RouterLink>
+        </template>
+
         <template v-if="authStore.isAuthenticated">
           <RouterLink to="/panier" class="nav-btn nav-panier">
             🛒 Panier
@@ -30,6 +47,14 @@ const authStore = useAuthStore();
         </RouterLink>
         
         <div class="auth-menu">
+          <button 
+            v-if="authStore.isAuthenticated && authStore.user?.role !== 'admin'" 
+            @click="toggleAdminMode" 
+            class="nav-btn debug-btn"
+          >
+            🛸 Antigravity
+          </button>
+
           <template v-if="authStore.isAuthenticated">
             <RouterLink to="/profile" class="nav-btn nav-auth auth-profile">
               👤 Mon Profil
@@ -54,6 +79,7 @@ const authStore = useAuthStore();
 </template>
 
 <style scoped>
+/* TES STYLES DE BASE GARDÉS */
 .main-header {
   background-color: var(--cm-bleu, #1B2A6B); 
   color: var(--cm-blanc, #FAFAF8);
@@ -80,6 +106,23 @@ const authStore = useAuthStore();
   gap: 24px;
 }
 
+/* STYLE DU BOUTON DEBUG / ANTIGRAVITY */
+.debug-btn {
+  background-color: #6a1b9a; /* Violet pour le mode debug */
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.debug-btn:hover {
+  background-color: #4a148c;
+}
+
+.nav-admin {
+  background-color: #E63946; 
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
 .auth-menu {
   display: flex;
   align-items: center;
@@ -100,16 +143,6 @@ const authStore = useAuthStore();
   margin-right: 16px;
 }
 
-.sub-brand {
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  font-size: 0.9rem;
-  margin-left: 8px;
-  color: var(--cm-lavande, #9BAED6);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
 .main-nav {
   display: flex;
   gap: 16px;
@@ -123,20 +156,8 @@ const authStore = useAuthStore();
   padding: 8px 12px;
   border-radius: var(--cm-radius-sm, 6px);
   transition: all 0.25s ease;
-  font-family: 'Inter', sans-serif;
 }
 
-.main-nav a:hover {
-  background-color: rgba(155, 174, 214, 0.15); /* --cm-lavande transparent */
-  color: var(--cm-jaune, #F2A900);
-}
-
-.main-nav a.router-link-active {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--cm-jaune, #F2A900);
-}
-
-/* Boutons Header */
 .nav-btn {
   text-decoration: none;
   font-weight: 600;
@@ -149,55 +170,12 @@ const authStore = useAuthStore();
   gap: 6px;
 }
 
-.nav-panier {
-  background-color: var(--cm-vert, #8DB4B0);
-  color: white;
-}
-.nav-panier:hover {
-  background-color: #6fa09a;
-  transform: translateY(-1px);
-}
-
-.nav-fav {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.3);
-}
-.nav-fav:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: white;
-}
-
-.nav-auth {
-  border-radius: var(--cm-radius-sm, 6px);
-}
-
-.auth-login {
-  background-color: transparent;
-  color: var(--cm-blanc, white);
-}
-.auth-login:hover {
-  color: var(--cm-jaune, #F2A900);
-}
-
-.auth-register {
-  background-color: var(--cm-jaune, #F2A900);
-  color: var(--cm-bleu, #1B2A6B);
-}
-.auth-register:hover {
-  background-color: #D4940A;
-  transform: translateY(-1px);
-}
-
-.auth-profile {
-  background-color: var(--cm-lavande, #9BAED6);
-  color: var(--cm-bleu, #1B2A6B);
-  font-weight: 700;
-}
-.auth-profile:hover {
-  background-color: #cad8f3;
-  transform: translateY(-1px);
-}
+.nav-panier { background-color: var(--cm-vert, #8DB4B0); color: white; }
+.nav-fav { background-color: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255,255,255,0.3); }
+.nav-auth { border-radius: var(--cm-radius-sm, 6px); }
+.auth-login { color: white; }
+.auth-register { background-color: var(--cm-jaune, #F2A900); color: var(--cm-bleu, #1B2A6B); }
+.auth-profile { background-color: var(--cm-lavande, #9BAED6); color: var(--cm-bleu, #1B2A6B); font-weight: 700; }
 
 .page-content {
   background-color: var(--cm-bg, #F5F0EA);

@@ -124,28 +124,12 @@ const router = createRouter({
   }
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const authStore = useAuthStore()
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else {
-    next()
+    return '/login'
   }
-})
-
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth) {
-    // --- GESTION DE L'AUTHENTIFICATION (Dev 2) ---
-    // const authStore = useAuthStore()
-    // if (!authStore.isAuthenticated) {
-    //   return next({ name: 'login' })
-    // }
-    
-    // En attendant le store de Dev 2, on laisse passer
-    next()
-  } else {
-    next()
-  }
+  return true
 })
 
 
