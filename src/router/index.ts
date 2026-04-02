@@ -82,6 +82,8 @@ const router = createRouter({
       name: 'profile',
       component: ProfileView,
       meta: { requiresAuth: true }
+    },
+    {
       path: '/annonces/detail/:id',
       name: 'annonce-detail',
       component: AnnonceDetail,
