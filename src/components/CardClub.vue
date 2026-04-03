@@ -21,6 +21,7 @@ const tronquerTexte = (texte, limite) => {
         <span class="status" v-if="club.statutMiseEnLigne === 'NOUVEAU'">Nouveau</span>
       </div>
       <p class="description">{{ tronquerTexte(club.description, 100) }}</p>
+      <p class="localization">{{ club.localisation }}</p>
       <div class="card-footer">
         <router-link :to="{ name: 'annonce-detail', params: { id: club.idClub } }" class="btn-primary">
           Découvrir le village
@@ -46,7 +47,7 @@ const tronquerTexte = (texte, limite) => {
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  height: 100%; /* Pour que toutes les cartes aient la même hauteur */
+  height: 100%; 
 }
 
 .card:hover {

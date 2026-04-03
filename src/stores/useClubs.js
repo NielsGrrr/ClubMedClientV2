@@ -1,6 +1,6 @@
 
 import { ref, onMounted, watch } from 'vue';
-import annoncesService from '@/services/AnnonceService'; // Ton service actuel
+import annoncesService from '@/services/AnnonceService';
 
 export function useClubs(idLocalisationRef) {
   const clubs = ref([]);
