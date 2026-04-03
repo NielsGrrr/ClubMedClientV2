@@ -295,9 +295,9 @@ onMounted(async () => {
     }
   try {
     const all = await reservationService.getTypeChambresByClub(reservationState.clubId);
-    typesChambres.value = all.length > 0 ? all : await reservationService.getTypeChambres();
+    typesChambres.value = all;
   } catch {
-    try { typesChambres.value = await reservationService.getTypeChambres(); } catch { /* silent */ }
+    typesChambres.value = [];
   } finally {
     loadingChambres.value = false;
   }
