@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
-import { useAuthStore } from '@/stores/auth'; // On utilise ton store
+import { ref, watch } from 'vue';
+import { RouterLink, RouterView, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
+const route = useRoute();
 
-// LA FONCTION "ANTIGRAVITY" 🛸
-// Elle force le rôle admin dans le store Pinia sans passer par l'API
-const toggleAdminMode = () => {
-  if (authStore.user) {
-    authStore.updateUser({ role: 'admin' }); // Utilise ton action updateUser
-    alert("🚀 Mode Admin Activé ! Le bouton 🛠️ Admin va apparaître.");
-  } else {
-    alert("❌ Connecte-toi d'abord avec n'importe quel compte pour utiliser ce bouton.");
-  }
-};
+// Réactif : vérifie isAdmin à chaque navigation
+const isAdmin = ref(localStorage.getItem('isAdmin') === 'true');
+watch(() => route.fullPath, () => {
+  isAdmin.value = localStorage.getItem('isAdmin') === 'true';
+});
 </script>
 
 <template>
@@ -30,7 +27,7 @@ const toggleAdminMode = () => {
       </div>
 
       <div class="header-right">
-        <template v-if="authStore.isAuthenticated && authStore.user?.role === 'admin'">
+        <template v-if="isAdmin">
           <RouterLink to="/admin/resorts" class="nav-btn nav-admin">
             🛠️ Admin
           </RouterLink>
@@ -47,14 +44,6 @@ const toggleAdminMode = () => {
         </RouterLink>
         
         <div class="auth-menu">
-          <button 
-            v-if="authStore.isAuthenticated && authStore.user?.role !== 'admin'" 
-            @click="toggleAdminMode" 
-            class="nav-btn debug-btn"
-          >
-            🛸 Antigravity
-          </button>
-
           <template v-if="authStore.isAuthenticated">
             <RouterLink to="/profile" class="nav-btn nav-auth auth-profile">
               👤 Mon Profil
