@@ -74,18 +74,22 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
 
   // RÉCUPÉRER UN SEUL SÉJOUR (Pour l'édition)
   const getResortById = async (id: number) => {
-    let resort = resorts.value.find(r => r.idClub === id)
-    if (!resort) {
-      isLoading.value = true
-      try {
-        const response = await apiClient.get(`/Clubs/id/${id}`)
-        resort = response.data
-        if (resort) resorts.value.push(resort)
-      } catch (err: any) {
-        error.value = "Séjour introuvable."
-      } finally {
-        isLoading.value = false
-      }
+    isLoading.value = true
+    let resort = null;
+    try {
+      // FORCE THE API REQUEST ALWAYS to ensure TypeChambres and metadata are loaded
+      const response = await apiClient.get(`/Clubs/id/${id}`)
+      resort = response.data
+      
+      // Update local cache
+      const index = resorts.value.findIndex(r => r.idClub === id)
+      if (index !== -1) resorts.value[index] = resort;
+      else resorts.value.push(resort);
+      
+    } catch (err: any) {
+      error.value = "Séjour introuvable."
+    } finally {
+      isLoading.value = false
     }
     return resort
   }

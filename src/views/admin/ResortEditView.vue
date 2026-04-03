@@ -37,7 +37,8 @@ onMounted(async () => {
       Object.assign(formData, {
         ...resort,
         photos: resort.photos || [],
-        indisponibilites: resort.indisponibilites || []
+        indisponibilites: resort.indisponibilites || [],
+        typeChambres: resort.typeChambres || []
       })
     } else {
       alert("Séjour introuvable.")
