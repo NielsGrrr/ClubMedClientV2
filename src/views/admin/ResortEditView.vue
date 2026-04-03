@@ -128,7 +128,6 @@ const handleSubmit = async () => {
     </div>
 
     <form v-if="formData.titre" @submit.prevent="handleSubmit" class="resort-form">
-      <!-- Section Informations Générales -->
       <fieldset>
         <legend>Informations Générales</legend>
         <div class="form-group">
@@ -143,9 +142,18 @@ const handleSubmit = async () => {
 
         <div class="form-row">
           <div class="form-group half">
-            <label for="prixBase">Prix de base (€)</label>
-            <input id="prixBase" v-model.number="formData.prixBase" type="number" step="0.01" />
+            <label for="prixBase">Prix de base (€) *</label>
+            <input 
+              id="prixBase" 
+              v-model.number="formData.prixBase" 
+              type="number" 
+              step="0.01" 
+              min="0" 
+              required 
+              placeholder="Ex: 150"
+            />
           </div>
+          
           <div class="form-group half">
             <label for="localisation">Localisation</label>
             <input id="localisation" v-model="formData.localisation" type="text" />
@@ -183,6 +191,7 @@ const handleSubmit = async () => {
             <input v-model="chambre.nomType" placeholder="Nom (Ex: Suite Familiale)" required />
             <input v-model.number="chambre.surface" type="number" placeholder="Surface (m²)" />
             <input v-model.number="chambre.capaciteMax" type="number" placeholder="Capacité" required />
+            <input v-model.number="chambre.prixNuit" type="number" step="0.01" placeholder="Prix/nuit (€)" />
           </div>
           <textarea v-model="chambre.textePresentation" placeholder="Description courte (Ex: Parfait pour les familles)" rows="2"></textarea>
           <button type="button" @click="formData.typeChambres?.splice(index, 1)" class="btn-delete">🗑️ Supprimer</button>
@@ -190,11 +199,9 @@ const handleSubmit = async () => {
         <button type="button" @click="formData.typeChambres?.push({ nomType: '', surface: undefined, capaciteMax: 2, textePresentation: '' })" class="btn-add">+ Ajouter un hébergement</button>
       </fieldset>
 
-      <!-- Section Photos (HU 55) -->
       <fieldset>
-        <legend>Galerie Photos (HU 55 - Téléversement Serveur)</legend>
+        <legend>Galerie Photos</legend>
         <div class="add-item-group">
-          <!-- Vrai explorateur de fichiers ! -->
           <input 
             type="file" 
             multiple 
@@ -216,9 +223,8 @@ const handleSubmit = async () => {
         <p v-else class="empty-text">Aucune photo pour l'instant.</p>
       </fieldset>
 
-      <!-- Section Indisponibilités (HU 54) -->
       <fieldset>
-        <legend>Indisponibilités & Fermetures (HU 54)</legend>
+        <legend>Indisponibilités & Fermetures </legend>
         <div class="add-item-group">
           <input v-model="newDateFermeture" type="date" @keyup.enter.prevent="addIndisponibilite" />
           <button type="button" @click="addIndisponibilite" class="btn btn-secondary btn-sm">Ajouter Date</button>

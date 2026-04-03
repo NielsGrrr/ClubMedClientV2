@@ -66,7 +66,8 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
       clean.typeChambres = clean.typeChambres.map((tc: any) => ({
         ...tc,
         surface: tc.surface === '' || isNaN(Number(tc.surface)) ? null : Number(tc.surface),
-        capaciteMax: tc.capaciteMax === '' || isNaN(Number(tc.capaciteMax)) ? null : Number(tc.capaciteMax)
+        capaciteMax: tc.capaciteMax === '' || isNaN(Number(tc.capaciteMax)) ? null : Number(tc.capaciteMax),
+        prixNuit: tc.prixNuit === '' || isNaN(Number(tc.prixNuit)) ? null : Number(tc.prixNuit)
       }));
     }
     return clean;

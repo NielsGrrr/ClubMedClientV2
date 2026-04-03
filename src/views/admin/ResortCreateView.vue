@@ -76,8 +76,16 @@ const handleSubmit = async () => {
 
       <div class="form-row">
         <div class="form-group half">
-          <label for="prixBase">Prix de base (€)</label>
-          <input id="prixBase" v-model.number="formData.prixBase" type="number" step="0.01" />
+          <label for="prixBase">Prix de base (€) *</label>
+          <input 
+            id="prixBase" 
+            v-model.number="formData.prixBase" 
+            type="number" 
+            step="0.01" 
+            min="0" 
+            required 
+            placeholder="Ex: 150"
+          />
         </div>
         <div class="form-group half">
           <label for="localisation">Localisation</label>
@@ -126,6 +134,7 @@ const handleSubmit = async () => {
             <input v-model="chambre.nomType" placeholder="Nom (Ex: Suite Familiale)" required />
             <input v-model.number="chambre.surface" type="number" placeholder="Surface (m²)" />
             <input v-model.number="chambre.capaciteMax" type="number" placeholder="Capacité" required />
+            <input v-model.number="chambre.prixNuit" type="number" step="0.01" placeholder="Prix/nuit (€)" />
           </div>
           <textarea v-model="chambre.textePresentation" placeholder="Description courte (Ex: Parfait pour les familles)" rows="2"></textarea>
           <button type="button" @click="formData.typeChambres?.splice(index, 1)" class="btn-delete">🗑️ Supprimer</button>
