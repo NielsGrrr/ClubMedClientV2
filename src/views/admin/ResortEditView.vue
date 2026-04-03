@@ -138,9 +138,27 @@ const handleSubmit = async () => {
 
         <div class="form-row">
           <div class="form-group half">
+            <label for="prixBase">Prix de base (€)</label>
+            <input id="prixBase" v-model.number="formData.prixBase" type="number" step="0.01" />
+          </div>
+          <div class="form-group half">
             <label for="localisation">Localisation</label>
             <input id="localisation" v-model="formData.localisation" type="text" />
           </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="tailleM2">Taille (m²)</label>
+            <input id="tailleM2" v-model.number="formData.tailleM2" type="number" />
+          </div>
+          <div class="form-group half">
+            <label for="capacite">Capacité (personnes)</label>
+            <input id="capacite" v-model.number="formData.capacitePersonnes" type="number" />
+          </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group half">
             <label for="typeSejour">Type de séjour</label>
             <select id="typeSejour" v-model="formData.typeSejour">
