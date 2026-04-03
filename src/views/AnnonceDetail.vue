@@ -170,14 +170,13 @@ h1 { font-size: 2.8rem; color: #002f6c; margin: 0; }
   align-items: center;
   gap: 8px;
   background: #f1f2f6;
-  padding: 10px 16px;
-  border-radius: 30px;
-  color: #002f6c;
-  font-weight: 500;
-  font-size: 0.95rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: #333;
+  font-size: 0.85rem;
 }
 
-.feature-item .icon { font-size: 1.2rem; }
+.feature-item .icon { font-size: 1rem; color: #666; }
 .section-title { font-size: 1.8rem; margin-bottom: 30px; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; color: #002f6c; }
 
 .btn-fav {

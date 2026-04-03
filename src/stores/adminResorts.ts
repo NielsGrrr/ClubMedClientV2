@@ -100,7 +100,6 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
       const originalResort = resorts.value.find(r => r.idClub === id) || {};
       const cleanData = { ...originalResort, ...updateData } as any;
       delete cleanData.photos;
-      delete cleanData.indisponibilites;
 
       await apiClient.put(`/Clubs/${id}`, cleanData)
 

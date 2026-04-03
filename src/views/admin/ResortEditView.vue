@@ -21,7 +21,8 @@ const formData = reactive<Partial<Resort>>({
   tailleM2: undefined,
   capacitePersonnes: undefined,
   photos: [],
-  indisponibilites: []
+  indisponibilites: [],
+  typeChambres: []
 })
 
 const newDateFermeture = ref('')
@@ -174,6 +175,20 @@ const handleSubmit = async () => {
         </div>
       </fieldset>
 
+      <fieldset>
+        <legend>Hébergements (Suites)</legend>
+        <div v-for="(chambre, index) in formData.typeChambres" :key="'tc-'+index" class="dynamic-row">
+          <div class="dynamic-inputs">
+            <input v-model="chambre.nomType" placeholder="Nom (Ex: Suite Familiale)" required />
+            <input v-model.number="chambre.surface" type="number" placeholder="Surface (m²)" />
+            <input v-model.number="chambre.capaciteMax" type="number" placeholder="Capacité" required />
+          </div>
+          <textarea v-model="chambre.textePresentation" placeholder="Description courte (Ex: Parfait pour les familles)" rows="2"></textarea>
+          <button type="button" @click="formData.typeChambres?.splice(index, 1)" class="btn-delete">🗑️ Supprimer</button>
+        </div>
+        <button type="button" @click="formData.typeChambres?.push({ nomType: '', surface: undefined, capaciteMax: 2, textePresentation: '' })" class="btn-add">+ Ajouter un hébergement</button>
+      </fieldset>
+
       <!-- Section Photos (HU 55) -->
       <fieldset>
         <legend>Galerie Photos (HU 55 - Téléversement Serveur)</legend>
@@ -303,4 +318,24 @@ input:focus, textarea:focus, select:focus {
 .loading-message { text-align: center; padding: 2rem; color: #666; font-weight: 500; }
 .uploading-text { color: #1976d2; font-weight: bold; font-size: 0.9rem; animation: pulse 1.5s infinite; }
 @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+.dynamic-row {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #e1e8ed;
+}
+
+.dynamic-inputs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.dynamic-inputs input { margin-bottom: 0; }
+
+.btn-add { background: none; border: 2px dashed #002f6c; color: #002f6c; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: all 0.2s; }
+.btn-add:hover { background: #e8eff5; }
+.btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin-top: 10px; }
+
 </style>

@@ -16,7 +16,9 @@ const formData = reactive<Partial<Resort>>({
   prixBase: undefined,
   tailleM2: undefined,
   capacitePersonnes: undefined,
-  statutMiseEnLigne: 'EN_CREATION'
+  statutMiseEnLigne: 'EN_CREATION',
+  typeChambres: [],
+  indisponibilites: []
 })
 
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -116,6 +118,31 @@ const handleSubmit = async () => {
           </select>
         </div>
       </div>
+
+      <fieldset>
+        <legend>Hébergements (Suites)</legend>
+        <div v-for="(chambre, index) in formData.typeChambres" :key="'tc-'+index" class="dynamic-row">
+          <div class="dynamic-inputs">
+            <input v-model="chambre.nomType" placeholder="Nom (Ex: Suite Familiale)" required />
+            <input v-model.number="chambre.surface" type="number" placeholder="Surface (m²)" />
+            <input v-model.number="chambre.capaciteMax" type="number" placeholder="Capacité" required />
+          </div>
+          <textarea v-model="chambre.textePresentation" placeholder="Description courte (Ex: Parfait pour les familles)" rows="2"></textarea>
+          <button type="button" @click="formData.typeChambres?.splice(index, 1)" class="btn-delete">🗑️ Supprimer</button>
+        </div>
+        <button type="button" @click="formData.typeChambres?.push({ nomType: '', surface: undefined, capaciteMax: 2, textePresentation: '' })" class="btn-add">+ Ajouter un hébergement</button>
+      </fieldset>
+
+      <fieldset style="margin-top: 20px;">
+        <legend>Dates Indisponibles</legend>
+        <div class="dates-grid">
+          <div v-for="(date, index) in formData.indisponibilites" :key="'date-'+index" class="date-item">
+            <input type="date" v-model="formData.indisponibilites![index]" required />
+            <button type="button" @click="formData.indisponibilites?.splice(index, 1)" class="btn-delete-small">X</button>
+          </div>
+        </div>
+        <button type="button" @click="formData.indisponibilites?.push('')" class="btn-add" style="margin-top: 10px;">+ Bloquer une date</button>
+      </fieldset>
 
       <div class="form-group">
         <label>Télécharger des Images (Optionnel, liées lors de la création)</label>
@@ -227,6 +254,32 @@ input:focus, textarea:focus, select:focus {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.dynamic-row {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #e1e8ed;
+}
+
+.dynamic-inputs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.dynamic-inputs input { margin-bottom: 0; }
+
+.btn-add { background: none; border: 2px dashed #002f6c; color: #002f6c; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+.btn-add:hover { background: #e8eff5; }
+.btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin-top: 10px; }
+.btn-delete-small { background: transparent; color: #ef4444; border: none; font-weight: bold; cursor: pointer; margin-left: 5px; }
+
+.dates-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.date-item { display: flex; align-items: center; background: #f8f9fa; padding: 5px; border-radius: 6px; border: 1px solid #e1e8ed; }
+
+fieldset { border: 1px solid #e1e8ed; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+legend { font-weight: bold; color: #002f6c; padding: 0 10px; }
 
 .btn-primary { background-color: #1976d2; color: white; }
 .btn-secondary { background-color: #9e9e9e; color: white; }
