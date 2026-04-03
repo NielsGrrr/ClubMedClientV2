@@ -52,20 +52,30 @@ const errorMessage = ref('');
 const router = useRouter();
 const authStore = useAuthStore();
 
+const ADMIN_EMAIL = 'admin@clubmed.fr';
+const ADMIN_PASSWORD = 'Admin2024!';
+
 const submitForm = async () => {
   errorMessage.value = '';
   isSubmitting.value = true;
 
+  // 1. Vérification admin hardcodée (pas besoin de BDD)
+  if (form.value.email === ADMIN_EMAIL && form.value.password === ADMIN_PASSWORD) {
+    localStorage.setItem('isAdmin', 'true');
+    isSubmitting.value = false;
+    router.push('/admin/resorts');
+    return;
+  }
+
+  // 2. Sinon, login classique via l'API
   try {
     const payload = {
       email: form.value.email,
       password: form.value.password
     };
 
-    // Appel à l'endpoint de connexion (à créer côté back-end)
     const response = await api.post('/Auth/login', payload);
     
-    // Le JWT devrait être retourné avec les infos user dans response.data
     if (response.data && response.data.token) {
       authStore.setAuth(response.data.token, response.data.user);
       router.push('/profile');
