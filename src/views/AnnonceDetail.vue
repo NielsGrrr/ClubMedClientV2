@@ -42,11 +42,11 @@ onMounted(async () => {
   <div class="detail-container" v-if="club">
     <header class="gallery-mosaic">
       <div class="main-photo">
-        <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${club.numPhoto}.webp`" @error="$event.target.src=`/images/ressort/${club.numPhoto}.webp`" :alt="club.titre" />
+        <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${club.numPhoto}.webp`" @error.once="$event.target.src=`/images/ressort/${club.numPhoto}.webp`" :alt="club.titre" />
       </div>
       <div class="secondary-photos">
         <div v-for="(photo, index) in club.photoClubs?.slice(0, 2)" :key="index" class="sub-photo">
-           <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${photo.numPhoto}.webp`" @error="$event.target.src=`/images/ressort/${photo.numPhoto}.webp`" alt="Vue du club" />
+           <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${photo.numPhoto}.webp`" @error.once="$event.target.src=`/images/ressort/${photo.numPhoto}.webp`" alt="Vue du club" />
         </div>
         <div class="more-photos" v-if="club.photoClubs?.length > 2">
           <span>+{{ club.photoClubs.length - 2 }} photos</span>
