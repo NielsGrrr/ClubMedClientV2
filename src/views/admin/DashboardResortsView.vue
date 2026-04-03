@@ -21,6 +21,10 @@ const handleDelete = async (idClub) => {
     }
   }
 }
+
+const handleToggle = async (resort) => {
+  await resortStore.toggleVisibility(resort)
+}
 </script>
 
 <template>
@@ -50,17 +54,19 @@ const handleDelete = async (idClub) => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="resort in resorts" :key="resort.idClub">
+          <tr v-for="resort in resorts" :key="resort.idClub" :style="resort.statutMiseEnLigne === 'MASQUE' ? 'opacity: 0.5' : ''">
             <td>{{ resort.idClub }}</td>
             <td><strong>{{ resort.titre }}</strong></td>
             <td>
-              <span class="badge" :class="{'badge-active': resort.statutMiseEnLigne === 'EN_LIGNE'}">
-                {{ resort.statutMiseEnLigne }}
+              <span class="badge" :class="{'badge-active': resort.statutMiseEnLigne === 'EN_LIGNE', 'badge-hidden': resort.statutMiseEnLigne === 'MASQUE'}">
+                {{ resort.statutMiseEnLigne === 'MASQUE' ? '🔒 Masqué' : resort.statutMiseEnLigne }}
               </span>
             </td>
             <td>{{ resort.noteMoyenne || 'N/A' }} / 5</td>
             <td class="actions">
-              <!-- Futur boutons d'édition (HU 54 / 55) -->
+              <button @click="handleToggle(resort)" class="btn btn-sm" :class="resort.statutMiseEnLigne === 'MASQUE' ? 'btn-success' : 'btn-warning'">
+                {{ resort.statutMiseEnLigne === 'MASQUE' ? '👁️ Afficher' : '🙈 Masquer' }}
+              </button>
               <RouterLink :to="{ name: 'admin-resorts-edit', params: { id: resort.idClub } }" class="btn btn-secondary btn-sm">Modifier</RouterLink>
               <button @click="handleDelete(resort.idClub)" class="btn btn-danger btn-sm">Supprimer</button>
             </td>
@@ -168,5 +174,11 @@ const handleDelete = async (idClub) => {
 .btn-primary { background-color: #1976d2; color: white; }
 .btn-secondary { background-color: #9e9e9e; color: white; }
 .btn-danger { background-color: #d32f2f; color: white; }
+.btn-warning { background-color: #f57c00; color: white; }
+.btn-success { background-color: #388e3c; color: white; }
 .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.85rem; }
-</style>
+
+.badge-hidden {
+  background-color: #fff3e0;
+  color: #e65100;
+}</style>

@@ -14,7 +14,7 @@ export function useClubs(idLocalisationRef) {
         ? await annoncesService.getClubsByLocalisation(id)
         : await annoncesService.getAllClubs();
 
-      clubs.value = response.data;
+      clubs.value = response.data.filter(c => c.statutMiseEnLigne !== 'MASQUE');
     } catch (error) {
       console.error("Erreur API", error);
     } finally {

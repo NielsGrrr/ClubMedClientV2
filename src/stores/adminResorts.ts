@@ -159,6 +159,20 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
     }
   }
 
+  // MASQUER / AFFICHER
+  const toggleVisibility = async (resort: Resort) => {
+    const newStatut = resort.statutMiseEnLigne === 'EN_LIGNE' ? 'MASQUE' : 'EN_LIGNE'
+    try {
+      const payload = { ...resort, statutMiseEnLigne: newStatut }
+      await apiClient.put(`/Clubs/${resort.idClub}`, sanitizePayload(payload))
+      // Met à jour le state local
+      const idx = resorts.value.findIndex(r => r.idClub === resort.idClub)
+      if (idx !== -1) resorts.value[idx].statutMiseEnLigne = newStatut
+    } catch (err: any) {
+      error.value = "Erreur lors du changement de visibilité."
+    }
+  }
+
   // SUPPRIMER
   const deleteResort = async (idClub: number) => {
     isLoading.value = true
@@ -176,6 +190,6 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
   return {
     resorts, isLoading, error,
     stayTypes, addStayType, removeStayType,
-    fetchResorts, getResortById, createResort, updateResort, deleteResort
+    fetchResorts, getResortById, createResort, updateResort, deleteResort, toggleVisibility
   }
 })
