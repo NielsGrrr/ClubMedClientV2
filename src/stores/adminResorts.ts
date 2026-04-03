@@ -78,7 +78,7 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
     if (clean.prixBase === '' || isNaN(Number(clean.prixBase))) clean.prixBase = null;
     if (clean.tailleM2 === '' || isNaN(Number(clean.tailleM2))) clean.tailleM2 = null;
     if (clean.capacitePersonnes === '' || isNaN(Number(clean.capacitePersonnes))) clean.capacitePersonnes = null;
-    
+
     if (clean.typeChambres) {
       clean.typeChambres = clean.typeChambres.map((tc: any) => ({
         ...tc,
@@ -115,12 +115,12 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
       // FORCE THE API REQUEST ALWAYS to ensure TypeChambres and metadata are loaded
       const response = await apiClient.get(`/Clubs/id/${id}`)
       resort = response.data
-      
+
       // Update local cache
       const index = resorts.value.findIndex(r => r.idClub === id)
       if (index !== -1) resorts.value[index] = resort;
       else resorts.value.push(resort);
-      
+
     } catch (err: any) {
       error.value = "Séjour introuvable."
     } finally {
@@ -139,7 +139,7 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
       const originalResort = resorts.value.find(r => r.idClub === id) || {};
       const mergedData = { ...originalResort, ...updateData } as any;
       delete mergedData.photos;
-      
+
       const cleanData = sanitizePayload(mergedData);
 
       await apiClient.put(`/Clubs/${id}`, cleanData)
@@ -167,10 +167,10 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
       // 1. On s'assure d'avoir l'objet COMPLET (avec suites et metas) en cache
       // car sinon PutClub va supprimer les chambres inexistantes dans le payload (Erreur FK 23503)
       await getResortById(resort.idClub)
-      
+
       // 2. On utilise updateResort qui fait déjà le merge avec les données complètes
       await updateResort(resort.idClub, { statutMiseEnLigne: newStatut })
-      
+
       // 3. Met à jour le state local
       const idx = resorts.value.findIndex(r => r.idClub === resort.idClub)
       if (idx !== -1 && resorts.value[idx]) {
