@@ -27,11 +27,6 @@ const router = createRouter({
       component: TypeChambreList 
     },
     {
-      path: '/admin/login',
-      name: 'admin-login',
-      component: () => import('../views/admin/AdminLoginView.vue'),
-    },
-    {
       path: '/admin/resorts',
       name: 'admin-resorts',
       component: () => import('../views/admin/DashboardResortsView.vue'),
@@ -135,7 +130,7 @@ router.beforeEach((to, from) => {
   // Guard admin
   if (to.meta.requiresAdmin) {
     if (localStorage.getItem('isAdmin') !== 'true') {
-      return '/admin/login'
+      return '/login'
     }
   }
   

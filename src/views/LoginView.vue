@@ -62,6 +62,14 @@ const submitForm = async () => {
   // 1. Vérification admin hardcodée (pas besoin de BDD)
   if (form.value.email === ADMIN_EMAIL && form.value.password === ADMIN_PASSWORD) {
     localStorage.setItem('isAdmin', 'true');
+    // Crée une session utilisateur virtuelle pour l'admin
+    authStore.setAuth('admin-token-local', {
+      numClient: 0,
+      email: ADMIN_EMAIL,
+      nom: 'Administrateur',
+      prenom: 'ClubMed',
+      role: 'admin'
+    });
     isSubmitting.value = false;
     router.push('/admin/resorts');
     return;

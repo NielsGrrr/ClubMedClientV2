@@ -149,6 +149,7 @@ const updateProfile = async () => {
 
 const handleLogout = () => {
   authStore.logout();
+  localStorage.removeItem('isAdmin');
   router.push('/login');
 };
 
