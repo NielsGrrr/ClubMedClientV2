@@ -42,11 +42,11 @@ onMounted(async () => {
   <div class="detail-container" v-if="club">
     <header class="gallery-mosaic">
       <div class="main-photo">
-        <img :src="`/images/ressort/${club.numPhoto}.webp`" :alt="club.titre" />
+        <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${club.numPhoto}.webp`" :alt="club.titre" />
       </div>
       <div class="secondary-photos">
         <div v-for="(photo, index) in club.photoClubs?.slice(0, 2)" :key="index" class="sub-photo">
-           <img :src="`/images/ressort/${photo.numPhoto}.webp`" alt="Vue du club" />
+           <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${photo.numPhoto}.webp`" alt="Vue du club" />
         </div>
         <div class="more-photos" v-if="club.photoClubs?.length > 2">
           <span>+{{ club.photoClubs.length - 2 }} photos</span>
@@ -95,7 +95,7 @@ onMounted(async () => {
       <aside class="sidebar">
         <div class="booking-card">
           <div class="price-label">À partir de</div>
-          <div class="price-value">1 250 € <span>/ pers.</span></div>
+          <div class="price-value">{{ club.prixBase || '... ' }} € <span>/ pers.</span></div>
           <hr />
           <button @click="lancerReservation" class="btn-reserve">Réserver mon séjour</button>
           <a v-if="club.lienPdf" :href="club.lienPdf" target="_blank" class="link-pdf">
