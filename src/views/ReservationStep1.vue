@@ -55,7 +55,7 @@
                 <div class="cm-card-label">{{ tc.nomType }}</div>
                 <div class="cm-card-sub">{{ tc.surface }} m² · max {{ tc.capaciteMax }} pers.</div>
                 <div v-if="tc.textePresentation" class="cm-card-sub" style="margin-top:4px;font-style:italic;">{{ tc.textePresentation }}</div>
-                <div class="cm-card-price">{{ getPrixChambreDefaut(tc) }} € <span style="font-size:11px;font-weight:500;color:var(--cm-text-light)">/nuit/pers.</span></div>
+                <div class="cm-card-price">{{ getPrixChambreDefaut(tc) }} € <span style="font-size:11px;font-weight:500;color:var(--cm-text-light)">/nuit</span></div>
                 <div v-if="tc.indisponible" class="cm-card-badge" style="background:#FEE2E2;color:#991B1B;">Indisponible</div>
               </div>
             </div>
@@ -407,7 +407,7 @@ const isFormValid = computed(() => {
   if (!reservationState.typeChambreId) return false;
   if (!reservationState.dateDebut || !reservationState.dateFin) return false;
   for (const v of reservationState.voyageurs) {
-    if (!v.nom || !v.prenom || !v.dateNaissance) return false;
+    if (!v.nom || !v.prenom) return false;
   }
   return true;
 });
