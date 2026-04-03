@@ -95,6 +95,7 @@
                   :min="minDate"
                   :max="maxDate"
                   @change="onDateDebutChange"
+                  @input="checkDateBlocked('debut')"
                 />
               </div>
               <div class="cm-field">
@@ -106,11 +107,15 @@
                   :min="minDateFin"
                   :max="maxDate"
                   @change="calculerPrixStore"
+                  @input="checkDateBlocked('fin')"
                 />
               </div>
             </div>
             <div v-if="nbNuits > 0" class="cm-alert cm-alert-info" style="margin-top:14px;margin-bottom:0">
               📅 Durée du séjour : <strong>{{ nbNuits }} nuit{{ nbNuits > 1 ? 's' : '' }}</strong>
+            </div>
+            <div v-if="dateBlockedWarning" class="cm-alert cm-alert-danger" style="margin-top:10px;margin-bottom:0">
+              ⚠️ {{ dateBlockedWarning }}
             </div>
           </div>
 
@@ -207,7 +212,7 @@
               <span class="cm-price-line-label">× {{ reservationState.nbChambres }} chambre{{ reservationState.nbChambres > 1 ? 's' : '' }}</span>
             </div>
             <div class="cm-price-line">
-              <span class="cm-price-line-label">{{ nbNuits }} nuit{{ nbNuits > 1 ? 's' : '' }} × {{ reservationState.nbPersonnes }} pers.</span>
+              <span class="cm-price-line-label">{{ nbNuits }} nuit{{ nbNuits > 1 ? 's' : '' }} × {{ reservationState.typeChambrePrixNuit }} €/nuit</span>
               <span class="cm-price-line-value">{{ prixChambreTotal }} €</span>
             </div>
             <hr class="cm-price-divider" />
@@ -247,6 +252,8 @@ import { useAuthStore } from '../stores/auth';
 const router = useRouter();
 const loadingChambres = ref(true);
 const typesChambres = ref<any[]>([]);
+const clubIndisponibilites = ref<string[]>([]);
+const dateBlockedWarning = ref('');
 
 const today = new Date().toISOString().split('T')[0];
 const nextYear = new Date();
@@ -273,7 +280,7 @@ const alerteMineurSeul = computed(() => {
 
 const prixChambreTotal = computed(() => {
   if (!reservationState.typeChambreId || nbNuits.value === 0) return 0;
-  return nbNuits.value * reservationState.typeChambrePrixNuit * reservationState.nbPersonnes * reservationState.nbChambres;
+  return nbNuits.value * reservationState.typeChambrePrixNuit * reservationState.nbChambres;
 });
 
 const getAge = (dateNaissance: string) => calculerAge(dateNaissance);
@@ -300,6 +307,15 @@ onMounted(async () => {
     typesChambres.value = [];
   } finally {
     loadingChambres.value = false;
+  }
+
+  // Charger les dates bloquées du club
+  try {
+    const annoncesService = (await import('@/services/AnnonceService')).default;
+    const res = await annoncesService.getClubsById(reservationState.clubId);
+    clubIndisponibilites.value = res.data.indisponibilites || [];
+  } catch {
+    clubIndisponibilites.value = [];
   }
 });
 
@@ -330,6 +346,21 @@ const removeChambres = () => {
       reservationState.voyageurs.splice(capaciteTotale);
     }
     calculerPrix();
+  }
+};
+
+const checkDateBlocked = (field: 'debut' | 'fin') => {
+  const dateToCheck = field === 'debut' ? reservationState.dateDebut : reservationState.dateFin;
+  if (!dateToCheck || clubIndisponibilites.value.length === 0) {
+    dateBlockedWarning.value = '';
+    return;
+  }
+  if (clubIndisponibilites.value.includes(dateToCheck)) {
+    dateBlockedWarning.value = `La date ${dateToCheck} n'est pas disponible pour ce séjour.`;
+    if (field === 'debut') reservationState.dateDebut = '';
+    else reservationState.dateFin = '';
+  } else {
+    dateBlockedWarning.value = '';
   }
 };
 
