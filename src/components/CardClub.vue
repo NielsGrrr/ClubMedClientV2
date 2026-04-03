@@ -12,7 +12,7 @@ const tronquerTexte = (texte, limite) => {
 <template>
   <div class="card">
     <div class="photo-wrapper">
-      <img :src="`/images/ressort/${club.numPhoto}.webp`" :alt="club.titre" class="club-img" loading="lazy" />
+      <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${club.numPhoto}.webp`" @error="$event.target.src=`/images/ressort/${club.numPhoto}.webp`" :alt="club.titre" class="club-img" loading="lazy" />
       <div class="rating-badge">★ {{ club.noteMoyenne }}</div>
     </div>
     <div class="content">
