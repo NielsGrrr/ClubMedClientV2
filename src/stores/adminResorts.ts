@@ -163,12 +163,21 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
   const toggleVisibility = async (resort: Resort) => {
     const newStatut = resort.statutMiseEnLigne === 'EN_LIGNE' ? 'MASQUE' : 'EN_LIGNE'
     try {
-      const payload = { ...resort, statutMiseEnLigne: newStatut }
-      await apiClient.put(`/Clubs/${resort.idClub}`, sanitizePayload(payload))
+      // Payload minimal : seulement les champs que PutClub attend
+      const payload = {
+        idClub: resort.idClub,
+        titre: resort.titre,
+        description: resort.description,
+        numPhoto: resort.numPhoto || 0,
+        statutMiseEnLigne: newStatut,
+        typeChambres: resort.typeChambres || []
+      }
+      await apiClient.put(`/Clubs/${resort.idClub}`, payload)
       // Met à jour le state local
       const idx = resorts.value.findIndex(r => r.idClub === resort.idClub)
       if (idx !== -1) resorts.value[idx].statutMiseEnLigne = newStatut
     } catch (err: any) {
+      console.error("Toggle error:", err.response?.data)
       error.value = "Erreur lors du changement de visibilité."
     }
   }
