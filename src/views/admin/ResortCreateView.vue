@@ -13,6 +13,9 @@ const formData = reactive<Partial<Resort>>({
   description: '',
   localisation: '',
   typeSejour: '',
+  prixBase: undefined,
+  tailleM2: undefined,
+  capacitePersonnes: undefined,
   statutMiseEnLigne: 'EN_CREATION'
 })
 

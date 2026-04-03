@@ -42,11 +42,11 @@ onMounted(async () => {
   <div class="detail-container" v-if="club">
     <header class="gallery-mosaic">
       <div class="main-photo">
-        <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${club.numPhoto}.webp`" @error.once="$event.target.src=`/images/ressort/${club.numPhoto}.webp`" :alt="club.titre" />
+        <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/api/Clubs/photos/${club.numPhoto}.webp`" @error.once="$event.target.src=`/images/ressort/${club.numPhoto}.webp`" :alt="club.titre" />
       </div>
       <div class="secondary-photos">
         <div v-for="(photo, index) in club.photoClubs?.slice(0, 2)" :key="index" class="sub-photo">
-           <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/images/ressort/${photo.numPhoto}.webp`" @error.once="$event.target.src=`/images/ressort/${photo.numPhoto}.webp`" alt="Vue du club" />
+           <img :src="`https://apiclubmeds4a22-cqf0achtbje7d6ct.francecentral-01.azurewebsites.net/api/Clubs/photos/${photo.numPhoto}.webp`" @error.once="$event.target.src=`/images/ressort/${photo.numPhoto}.webp`" alt="Vue du club" />
         </div>
         <div class="more-photos" v-if="club.photoClubs?.length > 2">
           <span>+{{ club.photoClubs.length - 2 }} photos</span>
@@ -67,6 +67,25 @@ onMounted(async () => {
         </div>
 
         <p class="description">{{ club.description }}</p>
+
+        <div class="features-grid">
+          <div class="feature-item" v-if="club.localisation">
+            <span class="icon">📍</span>
+            <span>{{ club.localisation }}</span>
+          </div>
+          <div class="feature-item" v-if="club.typeSejour">
+            <span class="icon">🏖️</span>
+            <span>{{ club.typeSejour }}</span>
+          </div>
+          <div class="feature-item" v-if="club.capacitePersonnes">
+            <span class="icon">👥</span>
+            <span>{{ club.capacitePersonnes }} personnes</span>
+          </div>
+          <div class="feature-item" v-if="club.tailleM2">
+            <span class="icon">📏</span>
+            <span>{{ club.tailleM2 }} m²</span>
+          </div>
+        </div>
 
         <section class="section-chambres">
           <h2 class="section-title">Nos hébergements</h2>
@@ -137,7 +156,28 @@ onMounted(async () => {
 h1 { font-size: 2.8rem; color: #002f6c; margin: 0; }
 
 .rating-badge { background: #002f6c; color: white; padding: 8px 16px; border-radius: 50px; font-weight: bold; }
-.description { font-size: 1.1rem; line-height: 1.7; color: #636e72; margin-bottom: 40px; }
+.description { font-size: 1.1rem; line-height: 1.7; color: #636e72; margin-bottom: 30px; }
+
+.features-grid {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f2f6;
+  padding: 10px 16px;
+  border-radius: 30px;
+  color: #002f6c;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.feature-item .icon { font-size: 1.2rem; }
 .section-title { font-size: 1.8rem; margin-bottom: 30px; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; color: #002f6c; }
 
 .btn-fav {
