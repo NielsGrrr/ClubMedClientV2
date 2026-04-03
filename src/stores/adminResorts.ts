@@ -56,6 +56,23 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
     }
   }
 
+  // TYPES DE SÉJOUR DYNAMIQUES
+  const defaultStayTypes = ['Ski', 'Soleil', 'Nature'];
+  const storedStayTypes = JSON.parse(localStorage.getItem('customStayTypes') || 'null');
+  const stayTypes = ref<string[]>(storedStayTypes || defaultStayTypes);
+
+  const addStayType = (type: string) => {
+    if (type && !stayTypes.value.includes(type)) {
+      stayTypes.value.push(type);
+      localStorage.setItem('customStayTypes', JSON.stringify(stayTypes.value));
+    }
+  };
+
+  const removeStayType = (type: string) => {
+    stayTypes.value = stayTypes.value.filter(t => t !== type);
+    localStorage.setItem('customStayTypes', JSON.stringify(stayTypes.value));
+  };
+
   const sanitizePayload = (data: any) => {
     const clean = { ...data };
     if (clean.prixBase === '' || isNaN(Number(clean.prixBase))) clean.prixBase = null;
@@ -158,6 +175,7 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
 
   return {
     resorts, isLoading, error,
+    stayTypes, addStayType, removeStayType,
     fetchResorts, getResortById, createResort, updateResort, deleteResort
   }
 })
