@@ -56,12 +56,29 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
     }
   }
 
+  const sanitizePayload = (data: any) => {
+    const clean = { ...data };
+    if (clean.prixBase === '' || isNaN(Number(clean.prixBase))) clean.prixBase = null;
+    if (clean.tailleM2 === '' || isNaN(Number(clean.tailleM2))) clean.tailleM2 = null;
+    if (clean.capacitePersonnes === '' || isNaN(Number(clean.capacitePersonnes))) clean.capacitePersonnes = null;
+    
+    if (clean.typeChambres) {
+      clean.typeChambres = clean.typeChambres.map((tc: any) => ({
+        ...tc,
+        surface: tc.surface === '' || isNaN(Number(tc.surface)) ? null : Number(tc.surface),
+        capaciteMax: tc.capaciteMax === '' || isNaN(Number(tc.capaciteMax)) ? null : Number(tc.capaciteMax)
+      }));
+    }
+    return clean;
+  };
+
   // CRÉER UN NOUVEAU SÉJOUR
   const createResort = async (resortData: Partial<Resort>) => {
     isLoading.value = true
     error.value = null
     try {
-      const response = await apiClient.post('/Clubs', resortData)
+      const cleanData = sanitizePayload(resortData);
+      const response = await apiClient.post('/Clubs', cleanData)
       resorts.value.push(response.data)
       return response.data.idClub // Retourne l'ID au lieu de 'true' pour permettre l'upload
     } catch (err: any) {
@@ -102,8 +119,10 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
       // NETTOYAGE : On garde TOUTES les propriétés d'origine (comme numPhoto, numPays, etc.) 
       // en fusionnant l'état d'origine du store avec les nouvelles données modifiées.
       const originalResort = resorts.value.find(r => r.idClub === id) || {};
-      const cleanData = { ...originalResort, ...updateData } as any;
-      delete cleanData.photos;
+      const mergedData = { ...originalResort, ...updateData } as any;
+      delete mergedData.photos;
+      
+      const cleanData = sanitizePayload(mergedData);
 
       await apiClient.put(`/Clubs/${id}`, cleanData)
 
@@ -113,9 +132,9 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
       }
       return true
     } catch (err: any) {
-      // Affiche l'erreur précise du serveur dans la console pour debugger
-      console.error("Détail Erreur 400:", err.response?.data?.errors);
-      error.value = "Erreur de validation des données (400). Vérifiez les champs."
+      // Affiche l'erreur complète du serveur dans la console pour debugger
+      console.error("Détail Erreur 400:", err.response?.data);
+      error.value = err.response?.data?.title || "Erreur de validation des données (400). Vérifiez les champs."
       return false
     } finally {
       isLoading.value = false
