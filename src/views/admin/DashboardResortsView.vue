@@ -1,11 +1,13 @@
 <script setup>
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { useAdminResortStore } from '@/stores/adminResorts'
 
 // Utilisation du store Pinia dédié
 const resortStore = useAdminResortStore()
 const { resorts, isLoading, error } = storeToRefs(resortStore)
+const router = useRouter()
 
 onMounted(() => {
   resortStore.fetchResorts()
@@ -25,13 +27,21 @@ const handleDelete = async (idClub) => {
 const handleToggle = async (resort) => {
   await resortStore.toggleVisibility(resort)
 }
+
+const handleLogout = () => {
+  localStorage.removeItem('isAdmin')
+  router.push({ name: 'admin-login' })
+}
 </script>
 
 <template>
   <div class="dashboard-resorts">
     <header class="dashboard-header">
       <h1>Back-Office : Gestion des Séjours / Resorts</h1>
-      <RouterLink :to="{ name: 'admin-resorts-create' }" class="btn btn-primary">+ Nouveau Séjour</RouterLink>
+      <div style="display:flex;gap:10px;">
+        <RouterLink :to="{ name: 'admin-resorts-create' }" class="btn btn-primary">+ Nouveau Séjour</RouterLink>
+        <button @click="handleLogout" class="btn btn-danger">🚪 Déconnexion</button>
+      </div>
     </header>
 
     <div v-if="isLoading" class="state-message">

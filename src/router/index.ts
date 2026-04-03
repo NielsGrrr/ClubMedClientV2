@@ -27,22 +27,27 @@ const router = createRouter({
       component: TypeChambreList 
     },
     {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: () => import('../views/admin/AdminLoginView.vue'),
+    },
+    {
       path: '/admin/resorts',
       name: 'admin-resorts',
       component: () => import('../views/admin/DashboardResortsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAdmin: true }
     },
     {
       path: '/admin/resorts/create',
       name: 'admin-resorts-create',
       component: () => import('../views/admin/ResortCreateView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAdmin: true }
     },
     {
       path: '/admin/resorts/edit/:id',
       name: 'admin-resorts-edit',
       component: () => import('../views/admin/ResortEditView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAdmin: true },
       props: true
     },
     {
@@ -126,6 +131,15 @@ const router = createRouter({
 
 router.beforeEach((to, from) => {
   const authStore = useAuthStore()
+  
+  // Guard admin
+  if (to.meta.requiresAdmin) {
+    if (localStorage.getItem('isAdmin') !== 'true') {
+      return '/admin/login'
+    }
+  }
+  
+  // Guard auth classique
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return '/login'
   }
