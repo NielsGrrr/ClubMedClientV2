@@ -13,7 +13,7 @@ export interface Resort {
   typeSejour?: string;
   prixBase?: number;
   photos?: string[];
-  indisponibilites?: string[]; 
+  indisponibilites?: string[];
   [key: string]: any;
 }
 
@@ -91,33 +91,33 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
   }
 
   // METTRE À JOUR (HU 54 / 55)
- const updateResort = async (id: number, updateData: Partial<Resort>) => {
-  isLoading.value = true
-  error.value = null
-  try {
-    // NETTOYAGE : On garde TOUTES les propriétés d'origine (comme numPhoto, numPays, etc.) 
-    // en fusionnant l'état d'origine du store avec les nouvelles données modifiées.
-    const originalResort = resorts.value.find(r => r.idClub === id) || {};
-    const cleanData = { ...originalResort, ...updateData } as any;
-    delete cleanData.photos;
-    delete cleanData.indisponibilites;
+  const updateResort = async (id: number, updateData: Partial<Resort>) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      // NETTOYAGE : On garde TOUTES les propriétés d'origine (comme numPhoto, numPays, etc.) 
+      // en fusionnant l'état d'origine du store avec les nouvelles données modifiées.
+      const originalResort = resorts.value.find(r => r.idClub === id) || {};
+      const cleanData = { ...originalResort, ...updateData } as any;
+      delete cleanData.photos;
+      delete cleanData.indisponibilites;
 
-    await apiClient.put(`/Clubs/${id}`, cleanData)
-    
-    const index = resorts.value.findIndex(r => r.idClub === id)
-    if (index !== -1) {
-      resorts.value[index] = { ...resorts.value[index], ...updateData } as Resort
+      await apiClient.put(`/Clubs/${id}`, cleanData)
+
+      const index = resorts.value.findIndex(r => r.idClub === id)
+      if (index !== -1) {
+        resorts.value[index] = { ...resorts.value[index], ...updateData } as Resort
+      }
+      return true
+    } catch (err: any) {
+      // Affiche l'erreur précise du serveur dans la console pour debugger
+      console.error("Détail Erreur 400:", err.response?.data?.errors);
+      error.value = "Erreur de validation des données (400). Vérifiez les champs."
+      return false
+    } finally {
+      isLoading.value = false
     }
-    return true
-  } catch (err: any) {
-    // Affiche l'erreur précise du serveur dans la console pour debugger
-    console.error("Détail Erreur 400:", err.response?.data?.errors);
-    error.value = "Erreur de validation des données (400). Vérifiez les champs."
-    return false
-  } finally {
-    isLoading.value = false
   }
-}
 
   // SUPPRIMER
   const deleteResort = async (idClub: number) => {
@@ -127,14 +127,14 @@ export const useAdminResortStore = defineStore('adminResorts', () => {
       resorts.value = resorts.value.filter(r => r.idClub !== idClub)
     } catch (err: any) {
       error.value = "Échec de la suppression."
-      throw err 
+      throw err
     } finally {
       isLoading.value = false
     }
   }
 
-  return { 
-    resorts, isLoading, error, 
-    fetchResorts, getResortById, createResort, updateResort, deleteResort 
+  return {
+    resorts, isLoading, error,
+    fetchResorts, getResortById, createResort, updateResort, deleteResort
   }
 })
